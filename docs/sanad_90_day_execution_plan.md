@@ -41,7 +41,7 @@ By Day 90, five assets exist or the plan has honestly falsified itself:
 ### Step 0.1 — Lock the scope decisions (Fri–Sat, 1 h)
 Record these in the repo README on day one; changing them later restarts clocks:
 
-- **D1 — Primary base candidates:** Qwen3-14B, Fanar-2-27B-Instruct, and one control (Qwen3-32B if it fits your iteration patience, else Llama-3.3-class). ALLaM enters later as a sovereign-deployment adapter target, not a Week-1 candidate.
+- **D1 — Base models (FIXED 3 Jul 2026):** Core engine = Qwen3.5-9B (iteration base, bf16 LoRA — fits 32 GB) and Qwen3.5-27B (release candidate, 4-bit QLoRA); fallback if the hybrid architecture fights this card = Qwen3-32B. Fanar-2-27B-Instruct = sovereign deployment adapter + Arabic-consistency cross-check in evals, NOT a core-engine candidate. ALLaM = later Saudi deployment target. Qwen3.5 MoE variants (35B-A3B, 122B-A10B) are excluded: QLoRA unsupported on MoE, bf16 exceeds 32 GB. The Week-2 run is VERIFICATION with one reversion tripwire (Fanar-2 beats Qwen3.5-27B by ≥5 weighted points on the 25 pilot cases), not open selection.
 - **D2 — Open/closed line (per UDS §24.4):** OPEN → SanadBench, eval harness, technical report, methodology (Part I of UDS, already your defensive-publication layer). CLOSED → gold training data D1–D3, trained adapters, source registry, derivation-rule weights/thresholds.
 - **D3 — Language split:** 50/50 Arabic/English across all datasets and the benchmark. Arabic is the moat; do not let it become the afterthought.
 - **D4 — Naming:** working names **SanadBench** (benchmark), **Sanad-R** (reasoning adapter). Final naming before publication, not before.
@@ -75,7 +75,7 @@ pip install vllm openai anthropic google-genai pandas scipy
 
 **Smoke tests (must all pass before Week 1 ends):**
 1. `torch.cuda.get_device_capability()` returns `(12, 0)`; bf16 matmul runs.
-2. Qwen3-14B loads 4-bit and generates.
+2. Qwen3.5-9B loads (bf16) and generates with thinking mode on and off.
 3. Fanar-2-27B-Instruct loads 4-bit (~14–15 GB) and generates with its chat template, `<think>` mode on and off.
 4. A 10-step QLoRA run completes on a toy dataset without OOM at 8K context (27B: batch 1, grad-accum 16, gradient checkpointing on).
 5. vLLM serves one model and the eval harness can hit it.
@@ -86,7 +86,7 @@ pip install vllm openai anthropic google-genai pandas scipy
 
 ---
 
-## 2. Phase 1 — Pilot Gold + Base-Model Bake-off (Weeks 1–2: Jul 6–19)
+## 2. Phase 1 — Pilot Gold + Base-Model Verification Run (Weeks 1–2: Jul 6–19)
 
 ### Step 1.1 — Author the 25-case pilot gold set (Week 1, ~6 h)
 Method: **AI-drafted, human-graded** (rule R-C). For each case: you specify scenario skeleton (claim domain, sources, intended rules exercised) → Claude drafts the full record per UDS Appendix A/B → you correct every field and assign final grades → Codex spot-reviews 5 of 25 for derivation-trace validity.
@@ -106,12 +106,12 @@ A single Python entry point: `eval/run.py --model <endpoint> --suite pilot`. It 
 - Escalation precision/recall; abstention correctness
 - JSON-schema validity rate (a cheap, brutal early signal)
 
-### Step 1.3 — Bake-off (Week 2, mostly unattended, ~4 h hands-on)
+### Step 1.3 — Verification run (Week 2, mostly unattended, ~4 h hands-on)
 Run each base candidate three ways on the 25 pilot cases: (a) zero-shot with output schema only; (b) full methodology prompt (UDS Part I condensed to ~3K tokens) ; (c) methodology prompt + retrieval stub (registry facts pasted as evidence). Also run two frontier APIs under (b)+(c) as the ceiling reference.
 
-**Selection rule (pre-committed):** primary base = best open model on (b)+(c) weighted per UDS §12.1, with Arabic performance double-weighted for tie-breaks. Expected outcome is Qwen3-14B or Fanar-2-27B as primary and the other as secondary adapter target — but let the numbers decide (UDS §12.2: selection is empirical, not declared).
+**Verification rule (pre-committed):** Qwen3.5-27B is the default release candidate; the decision reverts only if Fanar-2 beats it by >=5 weighted points on the pilot battery. The run doubles as the paper's baseline table.
 
-**Exit criteria Phase 1:** bake-off table complete; primary + secondary base locked; harness runs end-to-end. **Codex review: bake-off memo (approve/reject with fixes).**
+**Exit criteria Phase 1:** verification table complete; release candidate locked; harness runs end-to-end. **Codex review: verification memo (approve/reject with fixes).**
 
 ---
 
@@ -165,7 +165,7 @@ mix: D1 gold ×3 oversample + D2 + D0 (≤40%) ; 50/50 ar/en enforced per batch
 special: Fanar-2 → keep native chat template; train derivation as <think> trace,
          verdict JSON as answer; low LR end (1e-4) — heavily post-trained base
 ```
-Planning throughput on the 5090 (estimates — measure and update Week 5): 14B ≈ 2.5–4K tok/s → full SFT overnight; 27B ≈ 1–1.5K tok/s → 1–2 nights. If 27B iteration exceeds 2 nights/run, burst one Series-of-runs to a rented H100 (~$2–3/h) rather than shrinking the experiment.
+Planning throughput on the 5090 (estimates — measure and update Week 5): Qwen3.5-9B bf16 LoRA = iteration base for full SFT overnight; Qwen3.5-27B QLoRA = release candidate for 1–2 nights. If 27B iteration exceeds 2 nights/run, burst one series of runs to a rented H100 (~$2–3/h) rather than shrinking the experiment.
 
 ### Step 3.2 — Error-driven iteration loop (Weeks 5–7; 3–4 cycles)
 After each run: evaluate on a 30-case **dev slice** from the training pool (never the frozen set) → build an error taxonomy (which R-rules fail; which bands confuse; Arabic vs English gap; schema breaks) → fix **data first, hyperparameters second** (80% of gains will come from gold-case additions targeting failure cells) → author 10–20 targeted gold cases → rerun. Each cycle ≈ 3–5 h human + 1–2 nights GPU.
@@ -272,7 +272,7 @@ Pre-committed matrix — score honestly, decide accordingly:
 | Day-job crunch (HUMAIN/GADD/bank deadlines) | High | Phases 2–3 tolerate 1-week pauses; frozen-set seal and patent date do not slip | Pause ≥ 2 weeks → shift Day-90 gate accordingly; never compress Phase 4 or 5.1 |
 | Gate FAIL | Medium | Pre-committed FAIL narrative (§5.3 of gate); benchmark carries publication | Execute PARTIAL/FAIL branch — assets 2–5 still ship |
 | Publication scoop (someone releases a similar verification benchmark) | Low | Provisional filed Week 9; arXiv immediately after | Accelerate 5.2–5.4 by one week; differentiate on Arabic + calibration + classical grounding |
-| 27B iteration too slow for the loop | Medium | 14B as iteration model, 27B as release candidate | > 2 nights/run → all iteration on 14B; single final 27B run |
+| 27B iteration too slow for the loop | Medium | 9B as iteration model, 27B as release candidate | > 2 nights/run → all iteration on 9B; single final 27B run |
 
 **Definition of done, per artifact:** every deliverable in this plan is done only when (a) it exists in the repo, (b) its metrics/hash are logged, and (c) Codex has issued an approval. Anything else is in-progress.
 
@@ -281,7 +281,7 @@ Pre-committed matrix — score honestly, decide accordingly:
 ## 10. First 72 Hours (so momentum starts tonight)
 
 1. **Tonight (Fri):** create both repos; write README with the D1–D4 decisions; open the coverage-matrix sheet.
-2. **Saturday:** environment build + smoke tests 1–5; start Qwen3-14B and Fanar-2-27B downloads overnight.
+2. **Saturday:** environment build + smoke tests 1–5; start Qwen3.5-9B, Qwen3.5-27B, and Fanar-2-27B downloads overnight.
 3. **Sunday:** author gold cases #1–3 with Claude (ṣukūk-certification template from UDS Appendix A first — it's already written); Codex reviews case #1's derivation trace; book the Week-6 IP-counsel intro call.
 
 *End of plan.*
