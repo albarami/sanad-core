@@ -21,7 +21,7 @@ train = [
     "bitsandbytes",
     "accelerate",
     "vllm",
-    "huggingface-hub[cli,hf_transfer]",
+    "huggingface-hub",  # 1.x: `hf` CLI + Xet transfer are built in (no extras)
 ]
 dev = [
     "ruff>=0.6",

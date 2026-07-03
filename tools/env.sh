@@ -4,4 +4,3 @@
 # never /mnt/c or /mnt/d (9P I/O is too slow for training).
 export HF_HOME="$HOME/models/hf"
 export SANAD_CKPT_DIR="$HOME/ckpts"
-export HF_HUB_ENABLE_HF_TRANSFER=1
