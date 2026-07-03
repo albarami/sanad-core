@@ -46,13 +46,13 @@ groups (`[tool.uv.sources]`). Both forks live in the same `uv.lock`.
 - accelerate 1.14.0 · huggingface-hub 1.22.0 (`hf` CLI working) · no vllm
 - flash-attn: not installed (xformers/SDPA cover attention)
 
-**SERVE venv** — lock-resolved conflicting group; built and version-verified
-once on 2026-07-03 late, then swapped away. **Not currently materialized** —
-the active `.venv` is TRAIN; `uv sync --group serve` re-materializes serve on
-demand (smoke test 5 will do so):
+**SERVE venv** — lock-resolved conflicting group, **not currently
+materialized** (the active `.venv` is TRAIN). `uv sync --group serve`
+materializes it; **smoke test 5 will materialize and version-verify it, and
+its evidence gets recorded here then.**
 
-- torch **2.11.0+cu128** · **vllm 0.24.0** · transformers 5.13.0 (as verified
-  at build; `uv.lock` reproduces exactly)
+- Lock-pinned versions (durable evidence: `uv.lock`): torch **2.11.0+cu128**
+  · **vllm 0.24.0** · transformers 5.13.0
 - vllm vendors its own qwen3_5 implementation, so serving tracks current
   transformers freely
 

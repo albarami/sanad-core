@@ -7,7 +7,7 @@
 - [x] `sanad-core` repo initialized (main + `chore/environment-setup` branch) — 2026-07-03
 - [x] Locked decisions D1–D4 recorded in README — 2026-07-03
 - [x] Skeleton dirs + seed files materialized — 2026-07-03
-- [x] uv env (Python 3.11) — train/serve SPLIT via uv conflicting groups, each built & version-verified once 2026-07-03: train = unsloth 2026.6.9 + transformers 5.2.0 (pinned, friction 7) + torch 2.10 cu128; serve = vllm 0.24.0 + transformers 5.13 + torch 2.11 cu128. **One materialized at a time — train currently active; serve is lock-resolved, swap-on-demand** via `uv sync --group serve`
+- [x] uv env (Python 3.11) — train/serve SPLIT via uv conflicting groups. **TRAIN built & version-verified 2026-07-03, currently active:** unsloth 2026.6.9 + transformers 5.2.0 (pinned, friction 7) + torch 2.10 cu128. **SERVE lock-resolved only, not materialized** (uv.lock pins vllm 0.24.0 + transformers 5.13 + torch 2.11 cu128) — smoke test 5 materializes and verifies it via `uv sync --group serve`
 - [x] Pushed to private remote `albarami/sanad-core` (Salim approved 2026-07-03) — PR #1 open
 - [ ] `sanad-bench` repo — **do not create until Week 3** (D4)
 
@@ -40,4 +40,9 @@
   findings (cache-state claim stale after canary; serve venv described as
   installed when swap-on-demand; "all empty" understated deliverables). All
   three fixed; stale superseded-D1 lock dir cleaned from `~/models/hf`.
-  Awaiting re-review. Merge + downloads remain gated on Salim.
+- 2026-07-03 review round 2: residual provenance finding — the serve venv
+  "built & verified once" claim had no durable evidence (only the ephemeral
+  setup-session transcript; uv.lock proves resolution, not materialization).
+  Per No-Free-Facts, wording downgraded to lock-resolved-only; smoke test 5
+  will materialize serve and record the evidence. Merge + downloads remain
+  gated on Salim.

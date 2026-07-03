@@ -23,9 +23,9 @@ Current step board: `docs/STATUS.md`. Environment truth: `docs/ENVIRONMENT.md`.
   active venv:** unsloth 2026.6.9, transformers **5.2.0 pinned** (lowest
   qwen3_5-registering release; evidence chain in ENVIRONMENT.md friction 7 —
   do not bump casually), trl 0.24.0, torch 2.10.0+cu128, no vllm. **SERVE is
-  lock-resolved but NOT currently installed** — verified once at build
-  (2026-07-03: vllm 0.24.0, transformers 5.13, torch 2.11.0+cu128);
-  `uv sync --group serve` re-materializes it (smoke test 5 does this). Smoke
+  lock-resolved but NOT currently installed** — `uv.lock` pins vllm 0.24.0,
+  transformers 5.13, torch 2.11.0+cu128; smoke test 5 will materialize and
+  version-verify it (`uv sync --group serve`). Smoke
   test 1 **passed** (re-verified in train venv); config-only Qwen3.5 canary
   **passed** (train venv resolves `Qwen3_5Config`, hybrid layer_types); smoke
   tests 2–4 run in train, 5 in serve — pending model downloads.
