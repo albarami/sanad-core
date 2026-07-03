@@ -30,3 +30,7 @@
 - 2026-07-03 late: independent editor revised PROJECT_BRIEF/execution plan — D1
   fixed to Qwen3.5-9B/27B core engine. All repo files re-synced to the revised
   brief; env re-resolved for latest unsloth (see ENVIRONMENT.md friction log).
+- 2026-07-03 latest: zero-download architecture probe — transformers 4.57.6
+  lacks qwen3_5 (needs ≥5.2; unsloth caps at 5.5.0; vllm constraint-disjoint
+  from that window). Downloads HELD; awaiting Salim's venv-strategy decision
+  (ENVIRONMENT.md friction entry 7).

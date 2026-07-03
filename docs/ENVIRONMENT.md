@@ -102,7 +102,24 @@ tonight, smoke tests tomorrow").
    transformers→4.57.6, trl→0.24.0, vllm→0.19.1. Also restrict uv resolution to
    linux/x86_64 (`[tool.uv] environments`) — default multi-platform resolve
    fails on vllm's darwin/mlx split — and pin `requires-python <3.12`.
-   **Watch item:** whether transformers 4.57.6 natively serves Qwen3.5's hybrid
-   architecture is unverified until weights land — smoke test 2 arbitrates
-   (unsloth vendors model patches). Pre-planned fallback if it fails: split
-   vllm into its own venv, raise transformers to 5.5.0 for training.
+   **Watch item — RESOLVED NEGATIVE by probe, see entry 7.**
+7. **Qwen3.5 architecture probe (2026-07-03 late, zero-download):**
+   `model_type: qwen3_5` / `Qwen3_5ForConditionalGeneration` is shared by all
+   dense sizes (0.8B–27B config.json compared). transformers 4.57.6 does NOT
+   have it (`CONFIG_MAPPING`: qwen3, qwen3_moe, qwen3_next — no qwen3_5);
+   `AutoConfig.from_pretrained("Qwen/Qwen3.5-0.8B")` → `ValueError: The
+   checkpoint you are trying to load has model type `qwen3_5` but Transformers
+   does not recognize this architecture.` GitHub tag probe: qwen3_5 entered
+   transformers at **v5.2.0** → viable window under unsloth's cap is
+   **[5.2.0, 5.5.0]**. vllm (0.19.1–0.23) requires transformers `<5.0 or
+   >5.5.0`; vllm 0.24 requires `>5.5` — **disjoint from [5.2, 5.5.0] in every
+   case ⇒ no single venv can hold latest-unsloth + vllm + qwen3_5-capable
+   transformers.** Mitigating fact: vllm 0.19.1 vendors its own qwen3_5
+   implementation (`model_executor/models/qwen3_5.py` + config shims), so
+   SERVING does not depend on the transformers version; the training/loading
+   path (transformers + unsloth-zoo's qwen3_5 patches, incl. gated-delta ops)
+   is what needs transformers ≥5.2. Decision pending (Salim): (a) train venv
+   bumps transformers to 5.5.0 and drops vllm, or (b) full split — train venv
+   (unsloth 2026.6.9 + transformers 5.5.0 + torch 2.10 cu128) + serve venv
+   (vllm 0.24 + transformers 5.13 + torch 2.11 cu128). Base-model downloads
+   held meanwhile.
