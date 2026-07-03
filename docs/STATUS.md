@@ -17,7 +17,7 @@
 - [ ] 3. Fanar-2-27B-Instruct loads 4-bit, generates, `<think>` on/off *(blocked on download)*
 - [ ] 4. 10-step QLoRA toy run @ 8K ctx without OOM
 - [ ] 5. vLLM serves a model; client request returns
-- [ ] Overnight downloads queued: Qwen3-14B, Fanar-2-27B-Instruct (+ Qwen3-32B if disk allows)
+- [x] Overnight downloads queued (detached, resumable) — Qwen3-14B → Fanar-2-27B-Instruct → Qwen3-32B (944 GB free allows all three); progress: `~/models/download.out` — 2026-07-03 21:30
 
 ## Step 3 — First gold work (after smoke tests)
 - [ ] Gold cases #1–3 authored (ṣukūk-certification template, UDS Appendix A first)
