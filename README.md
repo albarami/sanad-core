@@ -11,8 +11,15 @@ public. Training data, adapters, registry contents, and rule thresholds stay clo
 
 ## Locked decisions (Day 0 — recorded per execution plan Step 0.1)
 
-- **D1 — Base candidates:** Qwen3-14B (iteration primary), Fanar-2-27B-Instruct,
-  Qwen3-32B (control). ALLaM enters later as a sovereign adapter target.
+- **D1 — Base models (FIXED 3 Jul 2026):** Core engine = Qwen3.5-9B (iteration
+  base, bf16 LoRA — fits 32 GB) and Qwen3.5-27B (release candidate, 4-bit QLoRA);
+  fallback if the hybrid architecture fights this card = Qwen3-32B.
+  Fanar-2-27B-Instruct = sovereign-deployment adapter + Arabic-consistency
+  cross-check in evals — NOT a core-engine candidate. ALLaM = later Saudi
+  deployment target. Qwen3.5 MoE variants (35B-A3B, 122B-A10B) excluded: QLoRA
+  unsupported on MoE, bf16 exceeds 32 GB. The Week-2 run is VERIFICATION with one
+  reversion tripwire (Fanar-2 beats Qwen3.5-27B by ≥5 weighted points on the 25
+  pilot cases), not open selection.
 - **D2 — Open/closed line:** OPEN → SanadBench, eval harness, technical report,
   methodology. CLOSED → D1–D3 training data, adapters, source registry, rule
   weights/thresholds.

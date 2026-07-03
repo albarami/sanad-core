@@ -7,17 +7,17 @@
 - [x] `sanad-core` repo initialized (main + `chore/environment-setup` branch) — 2026-07-03
 - [x] Locked decisions D1–D4 recorded in README — 2026-07-03
 - [x] Skeleton dirs + seed files materialized — 2026-07-03
-- [x] uv env (Python 3.11) with train stack installed — torch 2.11.0+cu128, 2026-07-03
+- [x] uv env (Python 3.11) with train stack installed — final: torch 2.10.0+cu128 + unsloth 2026.6.9 after the D1 revision re-resolve, 2026-07-03
 - [ ] Pushed to private remote `albarami/sanad-core` (awaiting Salim's push approval)
 - [ ] `sanad-bench` repo — **do not create until Week 3** (D4)
 
 ## Step 2 — Smoke tests (record results in ENVIRONMENT.md)
-- [x] 1. CUDA capability (12,0) + bf16 matmul — PASS 2026-07-03 (see ENVIRONMENT.md)
-- [ ] 2. Qwen3-14B loads 4-bit, generates *(blocked on overnight download)*
-- [ ] 3. Fanar-2-27B-Instruct loads 4-bit, generates, `<think>` on/off *(blocked on download)*
-- [ ] 4. 10-step QLoRA toy run @ 8K ctx without OOM
+- [x] 1. CUDA capability (12,0) + bf16 matmul — PASS 2026-07-03, re-verified on final torch 2.10.0+cu128 (see ENVIRONMENT.md)
+- [ ] 2. Qwen3.5-9B loads (bf16) and generates, thinking mode on/off *(blocked on download approval)*
+- [ ] 3. Fanar-2-27B-Instruct (sovereign-adapter cross-check) loads 4-bit, generates, `<think>` on/off *(blocked on download approval)*
+- [ ] 4. 10-step QLoRA on Qwen3.5-27B @ 8K ctx without OOM (batch 1, grad-accum 16, grad ckpt)
 - [ ] 5. vLLM serves a model; client request returns
-- [x] Overnight downloads queued (detached, resumable) — Qwen3-14B → Fanar-2-27B-Instruct → Qwen3-32B (944 GB free allows all three); progress: `~/models/download.out` — 2026-07-03 21:30
+- [ ] Downloads (MANUAL — Salim approves launch): `tools/download_bases.sh` queues Qwen3.5-9B → Qwen3.5-27B → Fanar-2-27B-Instruct (`--with-fallback` adds Qwen3-32B). The 2026-07-03 auto-queued download of the superseded D1 iteration model was stopped when D1 was revised and its partial cache deleted (details: git history + `~/models/download-20260703.log`).
 
 ## Step 3 — First gold work (after smoke tests)
 - [ ] Gold cases #1–3 authored (ṣukūk-certification template, UDS Appendix A first)
@@ -27,3 +27,6 @@
 ## Notes
 - GPU had ~31/32.6 GB VRAM occupied by an external process during setup night —
   free it before smoke tests 2–5.
+- 2026-07-03 late: independent editor revised PROJECT_BRIEF/execution plan — D1
+  fixed to Qwen3.5-9B/27B core engine. All repo files re-synced to the revised
+  brief; env re-resolved for latest unsloth (see ENVIRONMENT.md friction log).

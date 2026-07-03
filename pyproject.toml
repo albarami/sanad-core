@@ -2,7 +2,7 @@
 name = "sanad-core"
 version = "0.1.0"
 description = "Sanad Track-A (private): reasoning-adapter training, SanadBench construction, eval harness, source registry"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.11,<3.12"
 dependencies = [
     "pandas>=2.2",
     "scipy>=1.13",
@@ -11,17 +11,24 @@ dependencies = [
 [dependency-groups]
 # GPU training/serving stack — local RTX 5090 (Blackwell sm_120) only.
 # Install with: uv sync --group train
+#
+# Version note (PROJECT_BRIEF D1, rev 3 Jul 2026): Qwen3.5 needs current
+# transformers, vllm >=0.19-class, and LATEST unsloth (Qwen3.5 support
+# confirmed May 2026). unsloth is therefore floored below and everything
+# else resolves under its caps (2026.6.9 caps: torch<2.11,
+# transformers<=5.5, trl<=0.24) — do not raise torch/transformers past
+# unsloth's ceiling.
 train = [
     "torch",
-    "unsloth",
+    "unsloth>=2026.6.9",
     "transformers",
     "datasets",
     "peft",
     "trl",
     "bitsandbytes",
     "accelerate",
-    "vllm",
-    "huggingface-hub",  # 1.x: `hf` CLI + Xet transfer are built in (no extras)
+    "vllm>=0.19",
+    "huggingface-hub",  # resolves under transformers' cap; `hf` CLI included (no extras)
 ]
 dev = [
     "ruff>=0.6",
@@ -30,6 +37,9 @@ dev = [
 
 [tool.uv]
 package = false
+# This is a single-machine project (WSL2, linux x86_64). Without this, uv
+# also resolves darwin/arm64 splits, where vllm's mlx deps are unsolvable.
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
 
 # Blackwell (sm_120) needs cu128 wheels — PROJECT_BRIEF "Tailored environment spec".
 [[tool.uv.index]]

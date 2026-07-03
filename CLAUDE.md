@@ -14,15 +14,21 @@ Current step board: `docs/STATUS.md`. Environment truth: `docs/ENVIRONMENT.md`.
 - **Seeds:** `data/d1/coverage_matrix.csv` (header contract only),
   `data/d1/MANDATORY_CELLS.md` (pilot-25 coverage cells), `docs/STATUS.md`,
   `docs/ENVIRONMENT.md`, README with locked decisions D1–D4.
-- **Environment:** uv venv (Python 3.11.15), torch 2.11.0+cu128, unsloth 2025.9.5,
-  transformers 5.13.0, trl 0.29.1, peft 0.19.1, bitsandbytes 0.49.2, vllm 0.24.0.
-  Install: `uv sync --group train`. Smoke test 1 (capability (12,0) + bf16 matmul)
-  **passed**; smoke tests 2–5 pending model downloads.
+- **Environment:** uv venv (Python 3.11.15), torch 2.10.0+cu128, **unsloth
+  2026.6.9** (floored — its caps bound torch/transformers/trl; see
+  ENVIRONMENT.md friction log), transformers 4.57.6, trl 0.24.0, peft 0.19.1,
+  bitsandbytes 0.49.2, vllm 0.19.1. Install: `uv sync --group train`. Smoke
+  test 1 (capability (12,0) + bf16 matmul) **passed**; smoke tests 2–5 pending
+  model downloads.
 - **Tools:** `tools/gpu_check.py` (smoke test 1), `tools/download_bases.sh`
-  (resumable base-model downloads), `tools/env.sh` (HF_HOME=`~/models/hf`,
-  SANAD_CKPT_DIR=`~/ckpts` — also persisted in `~/.bashrc`).
-- **Models:** Qwen3-14B, Fanar-2-27B-Instruct, Qwen3-32B queued for overnight
-  download into `~/models/hf` (all public, un-gated; log: `~/models/download-*.log`).
+  (resumable; **never auto-starts — Salim launches downloads manually**),
+  `tools/env.sh` (HF_HOME=`~/models/hf`, SANAD_CKPT_DIR=`~/ckpts` — also
+  persisted in `~/.bashrc`).
+- **Models (D1 FIXED 3 Jul 2026):** core engine Qwen3.5-9B (bf16 LoRA iteration
+  base) + Qwen3.5-27B (4-bit QLoRA release candidate); Fanar-2-27B-Instruct as
+  sovereign-deployment adapter + Arabic cross-check; Qwen3-32B fallback only;
+  MoE variants excluded. **Not yet downloaded** — awaiting Salim's approval
+  (the superseded old-D1 partial cache was deleted; `~/models/hf` is empty).
 - **CI/tests:** `.github/workflows/ci.yml` (ruff + pytest, dev group only — never
   install the train group on runners), `tests/test_skeleton.py` structure guards.
 - **Git:** `main` = genesis; work on `chore/environment-setup`; remote
@@ -47,6 +53,8 @@ planned slices via the Planning Prompt — plan-first, reviewer-verified.
 - **Compute provenance:** this workstation or personally paid cloud only.
 - **Git discipline:** branch per slice → PR → CI green → reviewer APPROVE →
   **pause for Salim's explicit go before any push/merge** (house rule).
+- **Model downloads:** manual-approval only — never launch or re-launch
+  `tools/download_bases.sh` (or any `hf download`) without Salim's explicit go.
 - **Storage:** weights/checkpoints/caches on WSL ext4 (`~/models`, `~/ckpts`) —
   never `/mnt/c` or `/mnt/d`, never in git.
 - **Language balance (D3):** 50/50 Arabic/English in every corpus.

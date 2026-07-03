@@ -31,36 +31,47 @@ uv sync --group train    # torch from cu128 index (Blackwell sm_120) + full stac
 ```
 
 Torch is pinned to the `https://download.pytorch.org/whl/cu128` index in
-`pyproject.toml` (`[tool.uv.sources]`); everything resolves in one venv —
-**234 packages, no unsloth↔vllm↔torch conflict at resolution (2026-07-03)**.
+`pyproject.toml` (`[tool.uv.sources]`); everything resolves in one venv.
 
-Installed versions (from `uv pip list`, 2026-07-03; venv = 12 GB):
+**Version policy (brief rev 3 Jul 2026):** Qwen3.5 needs current transformers,
+vllm ≥0.19-class, and **latest unsloth** (Qwen3.5 support confirmed May 2026).
+unsloth is floored in `pyproject.toml`; its caps bound the rest of the tree
+(2026.6.9: `torch<2.11`, `transformers<=5.5.0`, `trl<=0.24`).
 
-- torch **2.11.0+cu128** (cuda build 12.8)
-- unsloth 2025.9.5 (+ unsloth-zoo 2025.9.12) · transformers 5.13.0 · datasets 3.6.0
-- peft 0.19.1 · trl 0.29.1 · bitsandbytes 0.49.2 · accelerate 1.14.0
-- vllm 0.24.0 · huggingface-hub 1.22.0 · xformers 0.0.35 · triton 3.6.0
+Installed versions (from `uv.lock` re-resolve, 2026-07-03 late):
+
+- torch **2.10.0+cu128** (cu128 = Blackwell sm_120)
+- **unsloth 2026.6.9** (+ unsloth-zoo 2026.6.7) — latest on PyPI at install time
+- transformers 4.57.6 · datasets 3.6.0 · peft 0.19.1 · trl 0.24.0
+- bitsandbytes 0.49.2 · accelerate 1.14.0 · **vllm 0.19.1** (the ≥0.19-class the brief names)
+- huggingface-hub 0.36.2 (pulled below 1.x by transformers 4.57's cap; `hf` CLI
+  verified working) · xformers 0.0.35 · triton 3.6.0
 - flash-attn: **not installed** (not in the resolved tree; xformers + SDPA cover attention)
 
 `llamafactory` (optional secondary trainer per brief) deliberately **not installed** —
 add only if unsloth proves insufficient.
 
-## Base models (HF API probed 2026-07-03 — all public, none gated, no token needed)
+## Base models (D1 FIXED 3 Jul 2026; HF API probed same night — all public, un-gated)
 
-| Repo | Gated | Status |
+| Repo | Role (D1) | Status |
 |---|---|---|
-| `Qwen/Qwen3-14B` | no | download queued |
-| `QCRI/Fanar-2-27B-Instruct` | no | download queued |
-| `Qwen/Qwen3-32B` | no | download queued (disk allows: 944 GB free) |
+| `Qwen/Qwen3.5-9B` | core engine — iteration base, bf16 LoRA | awaiting Salim's download approval |
+| `Qwen/Qwen3.5-27B` | core engine — release candidate, 4-bit QLoRA | awaiting Salim's download approval |
+| `QCRI/Fanar-2-27B-Instruct` | sovereign-deployment adapter + Arabic cross-check | awaiting Salim's download approval |
+| `Qwen/Qwen3-32B` | fallback only (hybrid-arch tripwire) | opt-in via `--with-fallback` |
+
+Downloads are **manual-approval only** — `tools/download_bases.sh` never
+auto-starts. Disk at last check: 944 GB free (`~/models/hf` is empty — the
+superseded-queue partial cache was deleted 2026-07-03).
 
 ## Acceptance = five smoke tests (PROJECT_BRIEF)
 
 | # | Test | Status | Evidence |
 |---|---|---|---|
-| 1 | `torch.cuda.get_device_capability()` → `(12, 0)`; bf16 matmul runs | **PASS 2026-07-03** | `tools/gpu_check.py`: `capability: (12, 0)`, `bf16 matmul OK: (4096, 4096), mean=+0.0080` — passed even with ~31 GB VRAM held by an external process |
-| 2 | Qwen3-14B loads 4-bit and generates | PENDING (downloads overnight) | — |
-| 3 | Fanar-2-27B-Instruct loads 4-bit (~14–15 GB), generates, `<think>` on/off | PENDING (downloads overnight) | — |
-| 4 | 10-step QLoRA toy run @ 8K ctx, no OOM (27B: batch 1, grad-accum 16, grad ckpt) | PENDING | — |
+| 1 | `torch.cuda.get_device_capability()` → `(12, 0)`; bf16 matmul runs | **PASS 2026-07-03** (initial on torch 2.11.0+cu128; **re-verified same night on final torch 2.10.0+cu128**) | `tools/gpu_check.py`: `capability: (12, 0)`, `bf16 matmul OK: (4096, 4096)` — passed even with ~31 GB VRAM held by an external process |
+| 2 | Qwen3.5-9B loads (bf16) and generates, thinking mode on and off | PENDING (download approval) | — |
+| 3 | Fanar-2-27B-Instruct loads 4-bit (~14–15 GB), generates with native chat template, `<think>` on/off | PENDING (download approval) | — |
+| 4 | 10-step QLoRA on Qwen3.5-27B @ 8K ctx, no OOM (batch 1, grad-accum 16, grad ckpt) | PENDING | — |
 | 5 | vLLM serves one model; curl/openai-client request returns | PENDING | — |
 
 Setup night = tests queued; smoke tests 2–5 expected next session (per brief: "setup
@@ -79,3 +90,19 @@ tonight, smoke tests tomorrow").
    time, fall back to `attn_implementation="sdpa"` per brief and log it here.
 4. **No SSH keys on machine** — GitHub over HTTPS with `gh` credential helper
    (account `albarami`, repo+workflow scopes).
+5. **D1 revision mid-setup (2026-07-03 late)** — independent editor fixed D1 to
+   Qwen3.5-9B/27B while the old queue was still downloading the superseded
+   iteration model. Download killed and its 4.3 GB partial cache deleted (model
+   name: git history / `~/models/download-20260703.log`); download policy is
+   now manual-approval-only. `Qwen/Qwen3.5-9B` and `Qwen/Qwen3.5-27B` verified
+   on HF (public, un-gated; MoE variants exist and are excluded per D1).
+6. **unsloth staleness trap** — first resolve maximized torch (2.11.0) and
+   transformers (5.13.0), which forced unsloth back to 2025.9.5 (pre-Qwen3.5).
+   Fix: floor `unsloth>=2026.6.9` and let its caps pull torch→2.10.0+cu128,
+   transformers→4.57.6, trl→0.24.0, vllm→0.19.1. Also restrict uv resolution to
+   linux/x86_64 (`[tool.uv] environments`) — default multi-platform resolve
+   fails on vllm's darwin/mlx split — and pin `requires-python <3.12`.
+   **Watch item:** whether transformers 4.57.6 natively serves Qwen3.5's hybrid
+   architecture is unverified until weights land — smoke test 2 arbitrates
+   (unsloth vendors model patches). Pre-planned fallback if it fails: split
+   vllm into its own venv, raise transformers to 5.5.0 for training.
