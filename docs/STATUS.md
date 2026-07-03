@@ -8,7 +8,7 @@
 - [x] Locked decisions D1–D4 recorded in README — 2026-07-03
 - [x] Skeleton dirs + seed files materialized — 2026-07-03
 - [x] uv env (Python 3.11) — train/serve SPLIT via uv conflicting groups, both venvs built & verified 2026-07-03: train = unsloth 2026.6.9 + transformers 5.2.0 (pinned, friction 7) + torch 2.10 cu128; serve = vllm 0.24.0 + transformers 5.13 + torch 2.11 cu128. Swap: `uv sync --group train|serve`
-- [ ] Pushed to private remote `albarami/sanad-core` (awaiting Salim's push approval)
+- [x] Pushed to private remote `albarami/sanad-core` (Salim approved 2026-07-03) — PR #1 open
 - [ ] `sanad-bench` repo — **do not create until Week 3** (D4)
 
 ## Step 2 — Smoke tests (record results in ENVIRONMENT.md)
