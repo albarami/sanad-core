@@ -46,9 +46,13 @@ groups (`[tool.uv.sources]`). Both forks live in the same `uv.lock`.
 - accelerate 1.14.0 · huggingface-hub 1.22.0 (`hf` CLI working) · no vllm
 - flash-attn: not installed (xformers/SDPA cover attention)
 
-**SERVE venv** (verified 2026-07-03 late):
+**SERVE venv** — lock-resolved conflicting group; built and version-verified
+once on 2026-07-03 late, then swapped away. **Not currently materialized** —
+the active `.venv` is TRAIN; `uv sync --group serve` re-materializes serve on
+demand (smoke test 5 will do so):
 
-- torch **2.11.0+cu128** · **vllm 0.24.0** · transformers 5.13.0
+- torch **2.11.0+cu128** · **vllm 0.24.0** · transformers 5.13.0 (as verified
+  at build; `uv.lock` reproduces exactly)
 - vllm vendors its own qwen3_5 implementation, so serving tracks current
   transformers freely
 
@@ -65,8 +69,14 @@ add only if unsloth proves insufficient.
 | `Qwen/Qwen3-32B` | fallback only (hybrid-arch tripwire) | opt-in via `--with-fallback` |
 
 Downloads are **manual-approval only** — `tools/download_bases.sh` never
-auto-starts. Disk at last check: 944 GB free (`~/models/hf` is empty — the
-superseded-queue partial cache was deleted 2026-07-03).
+auto-starts. Disk at last check: 944 GB free. Exact `~/models/hf` contents
+(56 KB total, verified 2026-07-03 after review round 1): hub metadata markers
+(`.agent_harnesses.json`, `.check_for_update_done`, `hub/CACHEDIR.TAG`) plus
+the **config-only** cache tree of `Qwen/Qwen3.5-0.8B` written by the canary
+(`hub/models--Qwen--Qwen3.5-0.8B/` + its lock dir). **Zero model weights**
+(`find -name '*.safetensors' -o -name '*.bin' -o -name '*.gguf'` → 0 files).
+Stale lock dir from the killed superseded-D1 download was removed in review
+round 1.
 
 ## Acceptance = five smoke tests (PROJECT_BRIEF)
 

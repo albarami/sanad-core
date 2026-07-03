@@ -7,7 +7,7 @@
 - [x] `sanad-core` repo initialized (main + `chore/environment-setup` branch) — 2026-07-03
 - [x] Locked decisions D1–D4 recorded in README — 2026-07-03
 - [x] Skeleton dirs + seed files materialized — 2026-07-03
-- [x] uv env (Python 3.11) — train/serve SPLIT via uv conflicting groups, both venvs built & verified 2026-07-03: train = unsloth 2026.6.9 + transformers 5.2.0 (pinned, friction 7) + torch 2.10 cu128; serve = vllm 0.24.0 + transformers 5.13 + torch 2.11 cu128. Swap: `uv sync --group train|serve`
+- [x] uv env (Python 3.11) — train/serve SPLIT via uv conflicting groups, each built & version-verified once 2026-07-03: train = unsloth 2026.6.9 + transformers 5.2.0 (pinned, friction 7) + torch 2.10 cu128; serve = vllm 0.24.0 + transformers 5.13 + torch 2.11 cu128. **One materialized at a time — train currently active; serve is lock-resolved, swap-on-demand** via `uv sync --group serve`
 - [x] Pushed to private remote `albarami/sanad-core` (Salim approved 2026-07-03) — PR #1 open
 - [ ] `sanad-bench` repo — **do not create until Week 3** (D4)
 
@@ -36,3 +36,8 @@
   implemented, canary **PASS** in train venv (`Qwen3_5Config` resolves,
   hybrid layer_types visible), smoke test 1 re-passed. Downloads still HELD
   for Salim's explicit approval (ENVIRONMENT.md friction entry 7).
+- 2026-07-03 review round 1: reviewer REJECTED PR #1 on three doc-accuracy
+  findings (cache-state claim stale after canary; serve venv described as
+  installed when swap-on-demand; "all empty" understated deliverables). All
+  three fixed; stale superseded-D1 lock dir cleaned from `~/models/hf`.
+  Awaiting re-review. Merge + downloads remain gated on Salim.

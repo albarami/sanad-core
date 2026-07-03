@@ -8,18 +8,24 @@ Current step board: `docs/STATUS.md`. Environment truth: `docs/ENVIRONMENT.md`.
 
 ## What exists (as of 2026-07-03 — setup night)
 
-- **Structure (skeleton only, no feature code):** `data/{d0,d1,d2,d3}/`,
-  `eval/{frozen,dev,results}/`, `train/configs/`, `registry/`, `tools/`, `tests/`,
-  `docs/`. All empty except seeds below.
-- **Seeds:** `data/d1/coverage_matrix.csv` (header contract only),
+- **Skeleton dirs (empty, `.gitkeep`-held, no feature code):**
+  `data/{d0,d2,d3}/`, `eval/{frozen,dev,results}/`, `train/configs/`,
+  `registry/`.
+- **Seeds & docs:** `data/d1/coverage_matrix.csv` (header contract only),
   `data/d1/MANDATORY_CELLS.md` (pilot-25 coverage cells), `docs/STATUS.md`,
   `docs/ENVIRONMENT.md`, README with locked decisions D1–D4.
-- **Environment — TWO CONFLICTING VENVS** (uv conflict groups; syncing swaps
-  `.venv`): **train** = `uv sync --group train` → unsloth 2026.6.9,
-  transformers **5.2.0 pinned** (lowest qwen3_5-registering release; evidence
-  chain in ENVIRONMENT.md friction 7 — do not bump casually), trl 0.24.0,
-  torch 2.10.0+cu128, no vllm. **serve** = `uv sync --group serve` → vllm
-  0.24.0 (vendors qwen3_5), transformers 5.13, torch 2.11.0+cu128. Smoke
+- **Setup deliverables (real files, not feature code):** `tools/gpu_check.py`,
+  `tools/download_bases.sh`, `tools/env.sh`; `tests/test_skeleton.py`
+  (structure guards); `.github/workflows/ci.yml`; `pyproject.toml` + `uv.lock`
+  (conflicting train/serve groups); `.python-version`; `.env.example`.
+- **Environment — TWO CONFLICTING VENVS, one materialized at a time** (uv
+  conflict groups; syncing swaps `.venv` in place). **TRAIN is the currently
+  active venv:** unsloth 2026.6.9, transformers **5.2.0 pinned** (lowest
+  qwen3_5-registering release; evidence chain in ENVIRONMENT.md friction 7 —
+  do not bump casually), trl 0.24.0, torch 2.10.0+cu128, no vllm. **SERVE is
+  lock-resolved but NOT currently installed** — verified once at build
+  (2026-07-03: vllm 0.24.0, transformers 5.13, torch 2.11.0+cu128);
+  `uv sync --group serve` re-materializes it (smoke test 5 does this). Smoke
   test 1 **passed** (re-verified in train venv); config-only Qwen3.5 canary
   **passed** (train venv resolves `Qwen3_5Config`, hybrid layer_types); smoke
   tests 2–4 run in train, 5 in serve — pending model downloads.
@@ -30,8 +36,10 @@ Current step board: `docs/STATUS.md`. Environment truth: `docs/ENVIRONMENT.md`.
 - **Models (D1 FIXED 3 Jul 2026):** core engine Qwen3.5-9B (bf16 LoRA iteration
   base) + Qwen3.5-27B (4-bit QLoRA release candidate); Fanar-2-27B-Instruct as
   sovereign-deployment adapter + Arabic cross-check; Qwen3-32B fallback only;
-  MoE variants excluded. **Not yet downloaded** — awaiting Salim's approval
-  (the superseded old-D1 partial cache was deleted; `~/models/hf` is empty).
+  MoE variants excluded. **Not yet downloaded** — awaiting Salim's approval.
+  `~/models/hf` holds only hub metadata + the canary's **config-only**
+  Qwen3.5-0.8B tree (56 KB); **zero model weights** (exact inventory in
+  ENVIRONMENT.md).
 - **CI/tests:** `.github/workflows/ci.yml` (ruff + pytest, dev group only — never
   install the train group on runners), `tests/test_skeleton.py` structure guards.
 - **Git:** `main` = genesis; work on `chore/environment-setup`; remote
