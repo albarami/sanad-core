@@ -1,0 +1,38 @@
+# --- Model weights & artifacts (never in git; live in ~/models, ~/ckpts) ---
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+weights/
+models/
+ckpts/
+checkpoints/
+
+# --- Experiment tracking ---
+wandb/
+mlruns/
+
+# --- Secrets & local env ---
+.env
+.env.*
+!.env.example
+
+# --- Raw source data (licensed/unprocessed inputs stay out of git) ---
+data/**/raw/
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# --- Tooling / OS noise ---
+.ipynb_checkpoints/
+.DS_Store
+*:Zone.Identifier
