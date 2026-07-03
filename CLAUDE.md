@@ -14,12 +14,15 @@ Current step board: `docs/STATUS.md`. Environment truth: `docs/ENVIRONMENT.md`.
 - **Seeds:** `data/d1/coverage_matrix.csv` (header contract only),
   `data/d1/MANDATORY_CELLS.md` (pilot-25 coverage cells), `docs/STATUS.md`,
   `docs/ENVIRONMENT.md`, README with locked decisions D1–D4.
-- **Environment:** uv venv (Python 3.11.15), torch 2.10.0+cu128, **unsloth
-  2026.6.9** (floored — its caps bound torch/transformers/trl; see
-  ENVIRONMENT.md friction log), transformers 4.57.6, trl 0.24.0, peft 0.19.1,
-  bitsandbytes 0.49.2, vllm 0.19.1. Install: `uv sync --group train`. Smoke
-  test 1 (capability (12,0) + bf16 matmul) **passed**; smoke tests 2–5 pending
-  model downloads.
+- **Environment — TWO CONFLICTING VENVS** (uv conflict groups; syncing swaps
+  `.venv`): **train** = `uv sync --group train` → unsloth 2026.6.9,
+  transformers **5.2.0 pinned** (lowest qwen3_5-registering release; evidence
+  chain in ENVIRONMENT.md friction 7 — do not bump casually), trl 0.24.0,
+  torch 2.10.0+cu128, no vllm. **serve** = `uv sync --group serve` → vllm
+  0.24.0 (vendors qwen3_5), transformers 5.13, torch 2.11.0+cu128. Smoke
+  test 1 **passed** (re-verified in train venv); config-only Qwen3.5 canary
+  **passed** (train venv resolves `Qwen3_5Config`, hybrid layer_types); smoke
+  tests 2–4 run in train, 5 in serve — pending model downloads.
 - **Tools:** `tools/gpu_check.py` (smoke test 1), `tools/download_bases.sh`
   (resumable; **never auto-starts — Salim launches downloads manually**),
   `tools/env.sh` (HF_HOME=`~/models/hf`, SANAD_CKPT_DIR=`~/ckpts` — also
@@ -62,7 +65,8 @@ planned slices via the Planning Prompt — plan-first, reviewer-verified.
 ## Environment quickstart
 
 ```bash
-uv sync --group train              # full GPU stack (12 GB venv)
+uv sync --group train              # training venv (unsloth/QLoRA, smoke 1–4, hf downloads)
+uv sync --group serve              # serving venv (vLLM, smoke 5) — swaps .venv in place
 source tools/env.sh                # storage env vars
 uv run python tools/gpu_check.py   # smoke test 1
 uv run ruff check . && uv run pytest -q

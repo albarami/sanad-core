@@ -24,29 +24,33 @@ this file becomes reusable IP for the SGEIP stack (execution plan §1, Step 0.3)
 Set persistently in `~/.bashrc` (marked block, added 2026-07-03) and per-shell via
 `source tools/env.sh`.
 
-## Install method
+## Install method — TWO CONFLICTING VENVS (train ⇄ serve)
+
+No single dependency tree can hold latest-unsloth + vllm + qwen3_5-capable
+transformers (friction 6–7). The split is implemented as uv **conflicting
+dependency groups** in the one project; syncing swaps `.venv` in place:
 
 ```bash
-uv sync --group train    # torch from cu128 index (Blackwell sm_120) + full stack
+uv sync --group train    # training/QLoRA, hf downloads, smoke tests 1–4
+uv sync --group serve    # vLLM serving, smoke test 5
 ```
 
-Torch is pinned to the `https://download.pytorch.org/whl/cu128` index in
-`pyproject.toml` (`[tool.uv.sources]`); everything resolves in one venv.
+Torch resolves from the `https://download.pytorch.org/whl/cu128` index in both
+groups (`[tool.uv.sources]`). Both forks live in the same `uv.lock`.
 
-**Version policy (brief rev 3 Jul 2026):** Qwen3.5 needs current transformers,
-vllm ≥0.19-class, and **latest unsloth** (Qwen3.5 support confirmed May 2026).
-unsloth is floored in `pyproject.toml`; its caps bound the rest of the tree
-(2026.6.9: `torch<2.11`, `transformers<=5.5.0`, `trl<=0.24`).
+**TRAIN venv** (verified 2026-07-03 late):
 
-Installed versions (from `uv.lock` re-resolve, 2026-07-03 late):
+- torch **2.10.0+cu128** · **unsloth 2026.6.9** (+ zoo 2026.6.7, latest on PyPI)
+- **transformers 5.2.0** — pinned; see friction 7 for the pin's evidence chain
+- trl 0.24.0 · peft 0.19.1 · datasets 3.6.0 · bitsandbytes 0.49.2
+- accelerate 1.14.0 · huggingface-hub 1.22.0 (`hf` CLI working) · no vllm
+- flash-attn: not installed (xformers/SDPA cover attention)
 
-- torch **2.10.0+cu128** (cu128 = Blackwell sm_120)
-- **unsloth 2026.6.9** (+ unsloth-zoo 2026.6.7) — latest on PyPI at install time
-- transformers 4.57.6 · datasets 3.6.0 · peft 0.19.1 · trl 0.24.0
-- bitsandbytes 0.49.2 · accelerate 1.14.0 · **vllm 0.19.1** (the ≥0.19-class the brief names)
-- huggingface-hub 0.36.2 (pulled below 1.x by transformers 4.57's cap; `hf` CLI
-  verified working) · xformers 0.0.35 · triton 3.6.0
-- flash-attn: **not installed** (not in the resolved tree; xformers + SDPA cover attention)
+**SERVE venv** (verified 2026-07-03 late):
+
+- torch **2.11.0+cu128** · **vllm 0.24.0** · transformers 5.13.0
+- vllm vendors its own qwen3_5 implementation, so serving tracks current
+  transformers freely
 
 `llamafactory` (optional secondary trainer per brief) deliberately **not installed** —
 add only if unsloth proves insufficient.
@@ -72,7 +76,7 @@ superseded-queue partial cache was deleted 2026-07-03).
 | 2 | Qwen3.5-9B loads (bf16) and generates, thinking mode on and off | PENDING (download approval) | — |
 | 3 | Fanar-2-27B-Instruct loads 4-bit (~14–15 GB), generates with native chat template, `<think>` on/off | PENDING (download approval) | — |
 | 4 | 10-step QLoRA on Qwen3.5-27B @ 8K ctx, no OOM (batch 1, grad-accum 16, grad ckpt) | PENDING | — |
-| 5 | vLLM serves one model; curl/openai-client request returns | PENDING | — |
+| 5 | vLLM serves one model; curl/openai-client request returns | PENDING — run in the **serve** venv (`uv sync --group serve`) | — |
 
 Setup night = tests queued; smoke tests 2–5 expected next session (per brief: "setup
 tonight, smoke tests tomorrow").
@@ -118,8 +122,25 @@ tonight, smoke tests tomorrow").
    implementation (`model_executor/models/qwen3_5.py` + config shims), so
    SERVING does not depend on the transformers version; the training/loading
    path (transformers + unsloth-zoo's qwen3_5 patches, incl. gated-delta ops)
-   is what needs transformers ≥5.2. Decision pending (Salim): (a) train venv
-   bumps transformers to 5.5.0 and drops vllm, or (b) full split — train venv
-   (unsloth 2026.6.9 + transformers 5.5.0 + torch 2.10 cu128) + serve venv
-   (vllm 0.24 + transformers 5.13 + torch 2.11 cu128). Base-model downloads
-   held meanwhile.
+   is what needs transformers ≥5.2. **RESOLVED 2026-07-03: Salim chose (b),
+   the train/serve split** — implemented via uv conflicting groups (see
+   Install method above).
+   **Train transformers pin = 5.2.0, reasoning:** no artifact documents which
+   5.x the unsloth-zoo qwen3_5 patches were *tested* against; verifiable
+   evidence is authorship-era only — zoo's Qwen3.5 patch work landed in PR
+   #495 (2026-02-25, "Qwen3Next and Qwen3.5 MoE Patches, Transformers v5
+   fixes"), contemporaneous with transformers 5.2.0 (the release that
+   introduced `qwen3_5`); the patches are defensively gated
+   (`try: import transformers.models.qwen3_5_moe … except: return`) and the
+   gated-delta vjp is pure torch (its only qwen3_5 reference is an mlx_vlm
+   Apple-silicon path). Ambiguous ⇒ per the pre-committed rule, pin the
+   LOWEST qwen3_5-registering release: **==5.2.0** (clears unsloth's
+   exclusions, trl 0.24's ≥4.56.1, peft unconstrained). 5.2.x patch releases
+   are a sanctioned bump if one proves needed.
+   **Canary (config-only, zero weights) in the train venv: PASS 2026-07-03**
+   — `AutoConfig.from_pretrained("Qwen/Qwen3.5-0.8B")` → `Qwen3_5Config`,
+   `architectures=['Qwen3_5ForConditionalGeneration']`,
+   `layer_types={'full_attention','linear_attention'}` (hybrid layout served
+   natively). Smoke test 1 re-passed in the train venv same night.
+   Note: huggingface-hub differs per venv (1.22.0 train / per-lock serve);
+   `hf` CLI present in both.

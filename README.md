@@ -50,7 +50,8 @@ docs/            brief, UDS, execution plan, STATUS.md, ENVIRONMENT.md
 ## Environment (WSL2 · RTX 5090 · Python 3.11 via uv)
 
 ```bash
-uv sync --group train          # full GPU stack (torch cu128, unsloth, trl, vllm, …)
+uv sync --group train          # training venv: torch cu128, unsloth, trl, transformers 5.2.0
+uv sync --group serve          # serving venv: vLLM (conflicting group — swaps .venv)
 source tools/env.sh            # HF_HOME + checkpoint dirs on WSL ext4
 uv run python tools/gpu_check.py   # smoke test 1
 ```

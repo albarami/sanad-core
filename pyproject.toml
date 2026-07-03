@@ -9,26 +9,34 @@ dependencies = [
 ]
 
 [dependency-groups]
-# GPU training/serving stack — local RTX 5090 (Blackwell sm_120) only.
-# Install with: uv sync --group train
+# GPU stacks — local RTX 5090 (Blackwell sm_120) only. TRAIN and SERVE are
+# CONFLICTING groups (one venv at a time; `uv sync --group X` swaps):
+# no single tree can hold latest-unsloth + vllm + qwen3_5-capable
+# transformers — see docs/ENVIRONMENT.md friction entries 6–7.
 #
-# Version note (PROJECT_BRIEF D1, rev 3 Jul 2026): Qwen3.5 needs current
-# transformers, vllm >=0.19-class, and LATEST unsloth (Qwen3.5 support
-# confirmed May 2026). unsloth is therefore floored below and everything
-# else resolves under its caps (2026.6.9 caps: torch<2.11,
-# transformers<=5.5, trl<=0.24) — do not raise torch/transformers past
-# unsloth's ceiling.
+#   uv sync --group train   -> QLoRA/LoRA training, hf downloads, smoke 1-4
+#   uv sync --group serve   -> vLLM serving, smoke test 5
+#
+# TRAIN pins: unsloth floored at latest (Qwen3.5 support, May 2026); its
+# caps bound torch (<2.11 -> 2.10 cu128) and trl (<=0.24). transformers
+# is pinned ==5.2.0 — the LOWEST release registering qwen3_5, era-matched
+# to unsloth-zoo's Qwen3.5 patches (PR #495, 2026-02-25); no artifact
+# proves testing against later 5.x (friction 7 has the full chain).
 train = [
     "torch",
     "unsloth>=2026.6.9",
-    "transformers",
+    "transformers==5.2.0",
     "datasets",
     "peft",
     "trl",
     "bitsandbytes",
     "accelerate",
-    "vllm>=0.19",
-    "huggingface-hub",  # resolves under transformers' cap; `hf` CLI included (no extras)
+    "huggingface-hub",  # `hf` CLI included (no extras needed)
+]
+# SERVE: vllm 0.24-class resolves its own transformers (5.13) and torch
+# (2.11 cu128); vllm vendors qwen3_5 so serving never needed the pin.
+serve = [
+    "vllm>=0.24",
 ]
 dev = [
     "ruff>=0.6",
@@ -40,6 +48,7 @@ package = false
 # This is a single-machine project (WSL2, linux x86_64). Without this, uv
 # also resolves darwin/arm64 splits, where vllm's mlx deps are unsolvable.
 environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+conflicts = [[{ group = "train" }, { group = "serve" }]]
 
 # Blackwell (sm_120) needs cu128 wheels — PROJECT_BRIEF "Tailored environment spec".
 [[tool.uv.index]]
