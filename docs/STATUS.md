@@ -44,5 +44,9 @@
   "built & verified once" claim had no durable evidence (only the ephemeral
   setup-session transcript; uv.lock proves resolution, not materialization).
   Per No-Free-Facts, wording downgraded to lock-resolved-only; smoke test 5
-  will materialize serve and record the evidence. Merge + downloads remain
-  gated on Salim.
+  will materialize serve and record the evidence.
+- 2026-07-03 review round 2 verdict: **APPROVE** — independent reviewer
+  verified round-2 fix against durable evidence (train venv live-inspected;
+  serve lock-only wording; cache inventory; no secrets tracked). Phase 0
+  environment sign-off obtained. Merge + downloads remain gated on Salim's
+  explicit word.
