@@ -1,0 +1,50 @@
+[project]
+name = "sanad-core"
+version = "0.1.0"
+description = "Sanad Track-A (private): reasoning-adapter training, SanadBench construction, eval harness, source registry"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "pandas>=2.2",
+    "scipy>=1.13",
+]
+
+[dependency-groups]
+# GPU training/serving stack — local RTX 5090 (Blackwell sm_120) only.
+# Install with: uv sync --group train
+train = [
+    "torch",
+    "unsloth",
+    "transformers",
+    "datasets",
+    "peft",
+    "trl",
+    "bitsandbytes",
+    "accelerate",
+    "vllm",
+    "huggingface-hub[cli,hf_transfer]",
+]
+dev = [
+    "ruff>=0.6",
+    "pytest>=8",
+]
+
+[tool.uv]
+package = false
+
+# Blackwell (sm_120) needs cu128 wheels — PROJECT_BRIEF "Tailored environment spec".
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

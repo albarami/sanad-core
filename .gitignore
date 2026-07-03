@@ -36,3 +36,6 @@ dist/
 .ipynb_checkpoints/
 .DS_Store
 *:Zone.Identifier
+
+# --- GSD plugin session state (adopt deliberately later if the GSD workflow is used) ---
+.planning/
