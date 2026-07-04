@@ -46,15 +46,16 @@ groups (`[tool.uv.sources]`). Both forks live in the same `uv.lock`.
 - accelerate 1.14.0 · huggingface-hub 1.22.0 (`hf` CLI working) · no vllm
 - flash-attn: not installed (xformers/SDPA cover attention)
 
-**SERVE venv** — lock-resolved conflicting group, **not currently
-materialized** (the active `.venv` is TRAIN). `uv sync --group serve`
-materializes it; **smoke test 5 will materialize and version-verify it, and
-its evidence gets recorded here then.**
-
-- Lock-pinned versions (durable evidence: `uv.lock`): torch **2.11.0+cu128**
-  · **vllm 0.24.0** · transformers 5.13.0
-- vllm vendors its own qwen3_5 implementation, so serving tracks current
-  transformers freely
+**SERVE venv** — **materialized and version-verified by smoke test 5,
+2026-07-04**: `vllm 0.24.0 | transformers 5.13.0 | torch 2.11.0+cu128`
+(runtime `import` check inside the synced venv — matches `uv.lock` exactly).
+vllm vendors its own qwen3_5 implementation, so serving tracks current
+transformers freely. **Serving on this card needs three workarounds**
+(friction 12): `LD_LIBRARY_PATH=.venv/…/nvidia/cu13/lib`,
+`--attention-backend TRITON_ATTN`, `VLLM_USE_FLASHINFER_SAMPLER=0`.
+torchvision/torchaudio are declared in the serve group so they resolve
+from the cu128 index (also friction 12). After the test the active `.venv`
+was restored to TRAIN.
 
 `llamafactory` (optional secondary trainer per brief) deliberately **not installed** —
 add only if unsloth proves insufficient.
@@ -63,33 +64,43 @@ add only if unsloth proves insufficient.
 
 | Repo | Role (D1) | Status |
 |---|---|---|
-| `Qwen/Qwen3.5-9B` | core engine — iteration base, bf16 LoRA | awaiting Salim's download approval |
-| `Qwen/Qwen3.5-27B` | core engine — release candidate, 4-bit QLoRA | awaiting Salim's download approval |
-| `QCRI/Fanar-2-27B-Instruct` | sovereign-deployment adapter + Arabic cross-check | awaiting Salim's download approval |
-| `Qwen/Qwen3-32B` | fallback only (hybrid-arch tripwire) | opt-in via `--with-fallback` |
+| `Qwen/Qwen3.5-9B` | core engine — iteration base, bf16 LoRA | **DOWNLOADED 2026-07-04** — 4/4 shards, 19G |
+| `Qwen/Qwen3.5-27B` | core engine — release candidate, 4-bit QLoRA | **DOWNLOADED 2026-07-04** — 11/11 shards, 52G |
+| `QCRI/Fanar-2-27B-Instruct` | sovereign-deployment adapter + Arabic cross-check | **DOWNLOADED 2026-07-04** — 11/11 shards, 51G |
+| `Qwen/Qwen3-32B` | fallback only (hybrid-arch tripwire) | NOT downloaded — fallback not triggered |
 
 Downloads are **manual-approval only** — `tools/download_bases.sh` never
-auto-starts. Disk at last check: 944 GB free. Exact `~/models/hf` contents
-(56 KB total, verified 2026-07-03 after review round 1): hub metadata markers
-(`.agent_harnesses.json`, `.check_for_update_done`, `hub/CACHEDIR.TAG`) plus
-the **config-only** cache tree of `Qwen/Qwen3.5-0.8B` written by the canary
-(`hub/models--Qwen--Qwen3.5-0.8B/` + its lock dir). **Zero model weights**
-(`find -name '*.safetensors' -o -name '*.bin' -o -name '*.gguf'` → 0 files).
-Stale lock dir from the killed superseded-D1 download was removed in review
-round 1.
+auto-starts. Queue completed 2026-07-04 ~09:33 (DONE markers for all three in
+`~/models/download.out`; per-model logs `~/models/download-2026070{3,4}.log`).
+Authenticated via `HF_TOKEN` in `.env` throughout the final run — **zero**
+"unauthenticated" warnings (the overnight run was anonymous and hit the
+DNS-flap saga in friction 8). `~/models/hf` holds **26 snapshot shard
+symlinks (4+11+11) plus one zero-byte `.no_exist` sentinel** — a benign HF
+cache marker at
+`models--Qwen--Qwen3.5-27B/.no_exist/…/model.safetensors`, so
+`find ~/models/hf/hub -name '*.safetensors' | wc -l` returns **27, not 26**
+(26 real symlinks + 1 sentinel); **zero `.incomplete` files**. 29 orphaned
+`.incomplete` blobs from killed attempts (28.7 GB) were deleted 2026-07-04
+after verifying zero overlap with snapshot-referenced blobs; `AutoConfig`
+re-verified for all three models post-cleanup (`Qwen3_5Config` ×2; Fanar-2 =
+`Gemma3TextConfig`, `model_type=gemma3_text`). Sizes (measured 2026-07-04
+14:24 UTC, after smoke tests 2–5): `~/models/hf` **121G**; `/home`
+**805G free** of 1007G. (An earlier reading right after orphan-cleanup, before
+the serve-venv and test artifacts, was ~118G cache / 865G free.)
 
 ## Acceptance = five smoke tests (PROJECT_BRIEF)
 
 | # | Test | Status | Evidence |
 |---|---|---|---|
 | 1 | `torch.cuda.get_device_capability()` → `(12, 0)`; bf16 matmul runs | **PASS 2026-07-03** (initial on torch 2.11.0+cu128; **re-verified same night on final torch 2.10.0+cu128**) | `tools/gpu_check.py`: `capability: (12, 0)`, `bf16 matmul OK: (4096, 4096)` — passed even with ~31 GB VRAM held by an external process |
-| 2 | Qwen3.5-9B loads (bf16) and generates, thinking mode on and off | PENDING (download approval) | — |
-| 3 | Fanar-2-27B-Instruct loads 4-bit (~14–15 GB), generates with native chat template, `<think>` on/off | PENDING (download approval) | — |
-| 4 | 10-step QLoRA on Qwen3.5-27B @ 8K ctx, no OOM (batch 1, grad-accum 16, grad ckpt) | PENDING | — |
-| 5 | vLLM serves one model; curl/openai-client request returns | PENDING — run in the **serve** venv (`uv sync --group serve`) | — |
+| 2 | Qwen3.5-9B loads (bf16) and generates, thinking mode on and off | **PASS 2026-07-04** | `Qwen3_5ForCausalLM`, bf16, sdpa; 16.7 GiB after load / 16.8 GiB peak; `enable_thinking=True` → reasoning trace then "42" (120 tok, 5.0s ≈ 24 tok/s on pure-torch linear-attention fallback, friction 11); `enable_thinking=False` → "42" in 5 tok / 0.2s |
+| 3 | Fanar-2-27B-Instruct loads 4-bit (~14–15 GB), generates with native chat template, `<think>` on/off | **PASS 2026-07-04** | NF4 double-quant + bf16 compute → `Gemma3ForCausalLM`, 22s load, **14.9 GiB** after load / 15.2 GiB peak; native template: thinking ON by default (`<think>` trace, 156 tok), OFF via `no_thinking=True` template var (direct answer, 10 tok). **Requires `HF_DEACTIVATE_ASYNC_LOAD=1`** (friction 9) |
+| 4 | 10-step QLoRA on Qwen3.5-27B @ 8K ctx, no OOM (batch 1, grad-accum 16, grad ckpt) | **FAIL 2026-07-04** — failed before step 1; **not** allocator OOM, **not** a capacity verdict (decision recorded, Salim 2026-07-04) | Load+PEFT themselves PASS (4-bit load 53s, 16.7 GiB; 79.7M trainable LoRA params; corpus sample 8551 tok → truncated 8192). Failure: `cudaErrorNotReady` / "CUDA driver error: device not ready" at accelerate `_convert_to_fp32 → tensor.float()`. Allocator at failure: **0 CUDA OOMs, 0 cudaMalloc retries, ~29.4 GiB peak allocated / ~29.7 GiB reserved of 31.8**. Workaround attempted: `UNSLOTH_DISABLE_DOUBLE_BUFFER=1` — removed the double-buffer path, failure persisted. Interpretation: WSL2 + torch 2.10.0+cu128 + unsloth/accelerate async/offload-path instability; train stack pinned `torch<2.11` by unsloth 2026.6.9 (no 2.10.1 exists). Qwen3-32B fallback **not triggered**. Open follow-up: vanilla ckpt/no-offload test, upstream to unsloth, or revisit train/serve dependency strategy (friction 10) |
+| 5 | vLLM serves one model; curl/openai-client request returns | **PASS 2026-07-04** (serve venv) | `uv sync --group serve` → runtime-verified `vllm 0.24.0 / transformers 5.13.0 / torch 2.11.0+cu128`; `vllm serve Qwen/Qwen3.5-9B --max-model-len 8192 --gpu-memory-utilization 0.85 --attention-backend TRITON_ATTN` (+`VLLM_USE_FLASHINFER_SAMPLER=0`, `LD_LIBRARY_PATH` → `nvidia/cu13/lib`) ready in 145s; OpenAI chat completion returned `finish=stop`, 101 completion tokens (thinking trace → "42"); clean shutdown. Three sm_120/cu128 workarounds: friction 12 |
 
-Setup night = tests queued; smoke tests 2–5 expected next session (per brief: "setup
-tonight, smoke tests tomorrow").
+Session 2 (2026-07-04): downloads completed and verified (26 snapshot shards,
+4+11+11), smoke tests 2–3 PASS, 4 FAIL-recorded (driver instability, decision
+above), 5 run same session per Salim's approval.
 
 ## Workarounds & friction log
 
@@ -154,3 +165,65 @@ tonight, smoke tests tomorrow").
    natively). Smoke test 1 re-passed in the train venv same night.
    Note: huggingface-hub differs per venv (1.22.0 train / per-lock serve);
    `hf` CLI present in both.
+8. **WSL2 DNS-proxy flap during downloads (2026-07-04 ~06:07–07:17)** — the
+   WSL resolver proxy (`10.255.255.254`, Tailscale search domain in the path)
+   intermittently stopped answering; established TCP flows kept streaming
+   while fresh lookups failed (`LocalEntryNotFoundError: [Errno -3] Temporary
+   failure in name resolution` fast-fails). Public resolvers (1.1.1.1/8.8.8.8)
+   answered fine throughout. The overnight anonymous download stalled and one
+   supervisor self-heal fired; final authenticated run (HF_TOKEN in `.env`)
+   completed the queue. **Ops lessons logged:** (a) `du -sb` is a FALSE stall
+   metric — Xet preallocates files to final apparent size; use file mtimes or
+   `/proc/<pid>/io` write counters; (b) always `source tools/env.sh` before
+   any manual `hf download` — one manual resume ran without `HF_HOME` and
+   wrote ~30 GB to `~/.cache/huggingface` (deleted; storage rule: `~/models`
+   only).
+9. **transformers 5.x threaded weight loading races bnb quantize-on-load
+   (27B-class)** — v5's parallel materialization (`core_model_loading.py`,
+   4 workers) issues concurrent GPU copies + `quantize_4bit` launches; on
+   this stack (WSL2, sm_120, torch 2.10) 27B-scale loads die with racy async
+   CUDA errors surfacing at bnb `ops.cu:62` (message varies run-to-run:
+   "out of memory" / "invalid configuration argument"), with ~29 GB free and
+   0 allocator OOMs. 9B loads fine; bnb kernels pass standalone at every
+   size/blocksize. **Fix: `HF_DEACTIVATE_ASYNC_LOAD=1`** (sequential
+   materialization) — Fanar-2 then loads 4-bit in 22s. Required for any
+   ≥27B 4-bit load in the train venv; harmless elsewhere.
+10. **Smoke test 4 FAIL — training-time async instability (2026-07-04,
+    decision: Salim)** — 10-step QLoRA on Qwen3.5-27B @ 8K fails before
+    step 1 with `cudaErrorNotReady` ("CUDA driver error: device not ready")
+    at accelerate `_convert_to_fp32 → tensor.float()`. Allocator: 0 OOMs,
+    0 cudaMalloc retries, peak ~29.4 GiB alloc / ~29.7 reserved of 31.8 —
+    **fits**; NOT capacity, NOT architecture ⇒ Qwen3-32B fallback not
+    triggered. `UNSLOTH_DISABLE_DOUBLE_BUFFER=1` removed the double-buffered
+    backward but not the failure. Interpretation: WSL2 + torch 2.10.0+cu128 +
+    unsloth/accelerate async/offload-path instability; train stack pinned
+    `torch<2.11` by unsloth 2026.6.9 and no torch 2.10.1 exists. Open
+    follow-up (tomorrow's decision): vanilla checkpointing/no-offload test,
+    upstream issue to unsloth, or revisit the train/serve dependency
+    strategy.
+11. **Gated-delta fast-path libs unavailable under torch 2.10** — fla
+    (flash-linear-attention) cpp extensions want torch ≥2.11 and
+    causal-conv1d is not installed; Qwen3.5 linear-attention layers run the
+    pure-torch fallback (functional; smoke 2 measured ~24 tok/s generation).
+    Revisit if/when the torch pin moves.
+12. **Serve venv on sm_120 with cu128 torch — three workarounds (smoke 5,
+    2026-07-04).** vllm 0.24.0 PyPI wheels link CUDA-13 runtime libs while
+    our torch pins to the cu128 index; three distinct breaks, each fixed
+    without moving any version pin:
+    (a) `ImportError: libcudart.so.13` — the lib ships in the unified
+    `nvidia/cu13` package but is off the extension RPATH in this mixed
+    layout ⇒ `export LD_LIBRARY_PATH=.venv/lib/python3.11/site-packages/nvidia/cu13/lib`.
+    (b) PyPI torchvision/torchaudio are CUDA-13 builds ⇒
+    `RuntimeError: PyTorch and torchvision were compiled with different CUDA
+    major versions`. Root cause: `[tool.uv.sources]` index routing applies
+    only to DECLARED dependencies, and in the serve group they were
+    transitive (via vllm). Fix: declare `torchvision`/`torchaudio` in the
+    serve group ⇒ relock moved them to `+cu128` builds of the same versions
+    (pyproject + uv.lock updated 2026-07-04).
+    (c) The cu128 runtime's capability probe fails on SM 12.x ("SM 12.x
+    requires CUDA >= 12.9"), so every FlashInfer entry point dies with
+    "requires sm75 or higher" — both attention auto-selection and the
+    topk/topp sampler JIT ⇒ `--attention-backend TRITON_ATTN` +
+    `VLLM_USE_FLASHINFER_SAMPLER=0` (native torch sampling). Proper fix
+    when desired: a cu129+/cu130 torch stack for serve — revisit alongside
+    the friction-10 torch-2.11 question.

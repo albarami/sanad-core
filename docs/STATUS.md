@@ -13,11 +13,11 @@
 
 ## Step 2 — Smoke tests (record results in ENVIRONMENT.md)
 - [x] 1. CUDA capability (12,0) + bf16 matmul — PASS 2026-07-03, re-verified on final torch 2.10.0+cu128 (see ENVIRONMENT.md)
-- [ ] 2. Qwen3.5-9B loads (bf16) and generates, thinking mode on/off *(blocked on download approval)*
-- [ ] 3. Fanar-2-27B-Instruct (sovereign-adapter cross-check) loads 4-bit, generates, `<think>` on/off *(blocked on download approval)*
-- [ ] 4. 10-step QLoRA on Qwen3.5-27B @ 8K ctx without OOM (batch 1, grad-accum 16, grad ckpt)
-- [ ] 5. vLLM serves a model; client request returns — run in the **serve** venv
-- [ ] Downloads (MANUAL — Salim approves launch): `tools/download_bases.sh` queues Qwen3.5-9B → Qwen3.5-27B → Fanar-2-27B-Instruct (`--with-fallback` adds Qwen3-32B). The 2026-07-03 auto-queued download of the superseded D1 iteration model was stopped when D1 was revised and its partial cache deleted (details: git history + `~/models/download-20260703.log`).
+- [x] 2. Qwen3.5-9B loads (bf16) and generates, thinking mode on/off — **PASS 2026-07-04** (16.7 GiB, thinking toggle verified; ENVIRONMENT.md)
+- [x] 3. Fanar-2-27B-Instruct (sovereign-adapter cross-check) loads 4-bit, generates, `<think>` on/off — **PASS 2026-07-04** (14.9 GiB, native `no_thinking` toggle; needs `HF_DEACTIVATE_ASYNC_LOAD=1`, friction 9)
+- [ ] 4. 10-step QLoRA on Qwen3.5-27B @ 8K ctx without OOM (batch 1, grad-accum 16, grad ckpt) — **FAIL 2026-07-04, recorded by decision**: `cudaErrorNotReady` driver/runtime instability before step 1; NOT allocator OOM (0 OOMs, peak 29.4/31.8 GiB — recipe fits), NOT a capacity/architecture verdict ⇒ **Qwen3-32B fallback not triggered**. Follow-up = tomorrow's decision (ENVIRONMENT.md friction 10)
+- [x] 5. vLLM serves a model; client request returns — **PASS 2026-07-04**: serve venv materialized & version-verified (vllm 0.24.0 / transformers 5.13.0 / torch 2.11.0+cu128); Qwen3.5-9B served, OpenAI-format request returned 101 tokens; three sm_120 workarounds required (ENVIRONMENT.md friction 12)
+- [x] Downloads — **COMPLETE 2026-07-04**: 26 snapshot shards (4+11+11; 9B 19G, 27B 52G, Fanar 51G) plus one zero-byte `.no_exist` sentinel (so `find … -name '*.safetensors'` returns 27, not 26); zero `.incomplete` files. Authenticated queue, DONE markers in `~/models/download.out`; orphaned partials cleaned (28.7 GB); AutoConfig re-verified ×3. Cache/disk (measured 2026-07-04 14:24 UTC): `~/models/hf` 121G, `/home` 805G free. DNS-flap saga + ops lessons: ENVIRONMENT.md friction 8. The 2026-07-03 auto-queued download of the superseded D1 iteration model was stopped when D1 was revised and its partial cache deleted (details: git history + `~/models/download-20260703.log`).
 
 ## Step 3 — First gold work (after smoke tests)
 - [ ] Gold cases #1–3 authored (ṣukūk-certification template, UDS Appendix A first)
@@ -50,3 +50,10 @@
   serve lock-only wording; cache inventory; no secrets tracked). Phase 0
   environment sign-off obtained. Merge + downloads remain gated on Salim's
   explicit word.
+- 2026-07-04: PR #1 squash-merged to main (Salim's go). Downloads approved,
+  completed 09:33 after a WSL2 DNS-flap night (1 supervisor self-heal, final
+  run authenticated; friction 8). Smoke tests: 2 PASS, 3 PASS (async-load
+  workaround, friction 9), 4 **FAIL recorded by Salim's decision** — driver
+  instability (`cudaErrorNotReady`), not OOM/capacity/architecture; no more
+  test-4 variants tonight; Qwen3-32B fallback NOT triggered (friction 10).
+  Test 5 separately approved and run same session (result in ENVIRONMENT.md).

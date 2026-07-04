@@ -35,8 +35,14 @@ train = [
 ]
 # SERVE: vllm 0.24-class resolves its own transformers (5.13) and torch
 # (2.11 cu128); vllm vendors qwen3_5 so serving never needed the pin.
+# torchvision/torchaudio are declared (not left transitive) because
+# [tool.uv.sources] only routes DECLARED deps to the cu128 index — PyPI
+# ships CUDA-13-linked builds that break against torch +cu128
+# (ENVIRONMENT.md friction 12, found by smoke test 5).
 serve = [
     "vllm>=0.24",
+    "torchvision",
+    "torchaudio",
 ]
 dev = [
     "ruff>=0.6",

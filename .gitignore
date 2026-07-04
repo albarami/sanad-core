@@ -39,3 +39,6 @@ dist/
 
 # --- GSD plugin session state (adopt deliberately later if the GSD workflow is used) ---
 .planning/
+
+# --- unsloth drops generated trainer code in the repo root at runtime ---
+unsloth_compiled_cache/
