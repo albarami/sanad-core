@@ -1,0 +1,111 @@
+{
+  "record_id": "gold-0001",
+  "split": "train",
+  "language": "en",
+  "input": {
+    "claim": "Issuer X's $500M sukuk program received Sharia certification.",
+    "sources": [
+      {
+        "source_id": "exch-qa-01",
+        "type": "regulatory_filing",
+        "axis1_grade": "S1",
+        "axis1_score": 94,
+        "dabt_profile": {"composite": 0.95, "scope": "gcc_fixed_income"},
+        "content": "National exchange disclosure-portal filing: the issuer's sukuk issuance of $450M received Sharia-compliance certification from the issuer's Sharia supervisory board.",
+        "timestamp": "2026-07-05T09:00:00Z"
+      },
+      {
+        "source_id": "issuer-x-ir",
+        "type": "corporate_ir",
+        "axis1_grade": "S4",
+        "axis1_score": 63,
+        "conflict_flags": ["self_interested_party"],
+        "content": "Issuer investor-relations release announcing the certification and stating the program size as $500M.",
+        "timestamp": "2026-07-05T09:15:00Z"
+      },
+      {
+        "source_id": "daily-gulf-fin",
+        "type": "financial_media",
+        "axis1_grade": "S3",
+        "axis1_score": 74,
+        "upstream_trace": ["issuer-x-ir"],
+        "content": "Regional financial daily reports the certification, citing $500M and attributing the figure to the company's announcement; it independently verified the filing's existence with the exchange.",
+        "timestamp": "2026-07-05T09:40:00Z"
+      },
+      {
+        "source_id": "tg-anon-4417",
+        "type": "anonymous_channel",
+        "axis1_grade": "MATRUK",
+        "axis1_score": 12,
+        "registry_flags": ["no_track_record", "manipulation_pattern_match"],
+        "content": "Anonymous Telegram channel with no track record claims the certification was rejected and the filing is a cover-up.",
+        "timestamp": "2026-07-05T09:50:00Z"
+      }
+    ],
+    "context": {"jurisdiction": "QA", "madhab_default": "hanafi", "decision_tier": 2}
+  },
+  "target": {
+    "analysis": "Step 1 - Axis-1 resolution (registry lookup). Exchange disclosure portal: S1 (94) - regulatory filing channel, near-zero error history. Issuer IR: S4 (63) - fundamentally truthful, structural self-interest, saduq-class examination required. Regional daily: S3 (74) - editorial oversight, sound record. Telegram channel: Matruk (< 40) - anonymous, zero track record, and the registry's manipulation-pattern check matches short-and-distort timing signatures.\n\nStep 2 - Isnad tracing and informational independence. The daily's figure traces upstream to the IR release (informational-independence test fails between sources 2 and 3 on the amount: one chain, not two). The filing (1) and the IR release (2) share an institutional origin - one institutional chain for the event. The daily's independent editorial confirmation of the event (it verified the filing's existence directly with the exchange) constitutes a second chain for the event only.\n\nStep 3 - Matn analysis and reconciliation (R5). Conflict: $450M (S1) vs. $500M (S4, echoed by S3). Reconciliation attempt: program size vs. tranche size, rounding, or announcement-vs-filing scope. The filing text specifies total program size $450M; the IR figure has no reconcilable basis. Resolution: S1 prevails; the $500M figure is recorded as an IR error (saduq yahim pattern logged against the issuer's IR dabt profile; the daily's dabt record notes uncritical single-source transmission).\n\nStep 4 - Tawatur assessment. Event attestation: two independent chains (filing; editorial verification). Below the lafzi floor (5) and, more decisively, insufficient independence diversity - no tawatur. R2 elevation available (>= 2 independent supports at >= S4): applicable to the event.\n\nStep 5 - Shudhudh analysis. The rejection claim (4) opposes stronger sources irreconcilably, so shudhudh is established. The source is Matruk, so it is excluded from evidence, and the manipulation-timing match escalates a fraud-signal alert (Tier-4 protocol) rather than a mere discount.\n\nStep 6 - Ilal screen. No chronological impossibility (filing precedes IR precedes press); no grafting signatures; no unresolved candidates. Screen clear.\n\nStep 7 - Verdict derivation. Event (certification granted): R1 anchors S1 to a V1 base of 92; R2 records independent S3 corroboration (already V1); R4 finds dabt composite strong with no change. Verdict: sahih (V1, 92), CI [88, 96]. Amount ($450M): R1 anchors S1 to a V1 base of 92; R5 resolves the conflict with a documented basis; R4 applies a minor deduction for ecosystem noise, yielding sahih (V1, 90), CI [86, 94], with the note that the $500M circulating figure is an issuer-IR error. Rejection claim: Matruk source, shudhudh, and manipulation signature yield mawdu (V6, 3) with a fraud alert issued. Validity horizon: event verdict until superseding filing; amount until program amendment filing.\n\nStep 8 - Emission. Full SanadAssessment records issued for all three claims with derivation traces and complete isnad; no Layer-3 escalation required (all rules resolved deterministically); fraud alert routed per Tier-4 protocol; two dabt-profile updates written to the registry.",
+    "verdicts": [
+      {
+        "claim": "certification granted",
+        "grade": "sahih",
+        "band": "V1",
+        "score": 92,
+        "confidence_interval": [88, 96],
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the strongest supporting chain terminates in S1 (exchange disclosure filing, score 94), anchoring the base verdict at V1 with score 92.",
+          "R2 (elevation by corroboration): the regional daily (S3) independently verified the certification event directly with the exchange, a second independent chain that confirms the event; the verdict is already V1, so this is recorded without a band change.",
+          "R4 (dabt modifier): the composite dabt of the supporting chain is strong, so no within-band adjustment applies and the score holds at 92."
+        ],
+        "rules_cited": ["R1", "R2", "R4"],
+        "valid_until": "superseding_filing"
+      },
+      {
+        "claim": "program size",
+        "value": "$450M",
+        "grade": "sahih",
+        "band": "V1",
+        "score": 90,
+        "confidence_interval": [86, 94],
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the amount is anchored to the S1 exchange filing (score 94), setting the base verdict at V1 with score 92.",
+          "R5 (conflict resolution): the $500M figure from the S4 issuer IR (echoed by the S3 daily) conflicts with the filing's $450M; reconciliation fails, so the higher-Axis-1 chain prevails, the S1 filing's $450M stands, and $500M is logged as an issuer-IR error.",
+          "R4 (dabt modifier): a minor within-band deduction of 2 points for ecosystem transmission noise lowers the score from 92 to 90, still inside V1."
+        ],
+        "rules_cited": ["R1", "R4", "R5"],
+        "notes": "$500M figure is issuer-IR error; single upstream chain",
+        "valid_until": "program_amendment_filing"
+      },
+      {
+        "claim": "certification rejected",
+        "grade": "mawdu",
+        "band": "V6",
+        "score": 3,
+        "derivation_trace": [
+          "R3 (demotion by defect): the sole support is a Matruk channel (score 12, below the 40 evidence floor), so it is excluded from evidence and the claim is assessed purely as a defect.",
+          "R3 (demotion by defect): shudhudh is established because the rejection opposes the stronger S1 and S3 sources irreconcilably, which under R3 caps such a verdict at V4.",
+          "R3 (demotion by defect): the manipulation-timing signature is a fabrication-class defect, demoting the verdict to mawdu (V6, score 3) and triggering a Tier-4 fraud alert."
+        ],
+        "rules_cited": ["R3"],
+        "defect_mechanisms": ["shudhudh"]
+      }
+    ],
+    "registry_updates": [
+      {"source_id": "issuer-x-ir", "action": "log_error", "pattern": "saduq_yahim:program_size"},
+      {"source_id": "daily-gulf-fin", "action": "log_note", "pattern": "uncritical_single_source_transmission"}
+    ],
+    "escalation": {"required": false, "fraud_alert": {"issued": true, "tier": 4}}
+  },
+  "meta": {
+    "author": "founder",
+    "drafted_by": "ai_structure",
+    "annotation_date": "2026-07-05",
+    "rules_exercised": ["R1", "R2", "R3", "R4", "R5"],
+    "defects_seeded": ["shudhudh"],
+    "domain": "islamic_finance",
+    "finance_shape": "sukuk_certification",
+    "review_status": "gold_approved",
+    "preference_pair_ids": []
+  }
+}

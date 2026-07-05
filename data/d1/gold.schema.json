@@ -1,0 +1,591 @@
+{
+  "$defs": {
+    "Axis2Grade": {
+      "description": "Classical verdict names bound one-to-one to bands.",
+      "enum": [
+        "sahih",
+        "hasan",
+        "hasan_li_ghayrihi",
+        "daif",
+        "daif_jiddan",
+        "mawdu"
+      ],
+      "title": "Axis2Grade",
+      "type": "string"
+    },
+    "Band": {
+      "description": "Axis-2 claim verdict band (Ṣaḥīḥ ladder), §2.3.",
+      "enum": [
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V5",
+        "V6"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "Context": {
+      "additionalProperties": false,
+      "properties": {
+        "jurisdiction": {
+          "title": "Jurisdiction",
+          "type": "string"
+        },
+        "madhab_default": {
+          "title": "Madhab Default",
+          "type": "string"
+        },
+        "decision_tier": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Decision Tier",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "jurisdiction",
+        "madhab_default",
+        "decision_tier"
+      ],
+      "title": "Context",
+      "type": "object"
+    },
+    "DabtProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "composite": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Composite",
+          "type": "number"
+        },
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "composite",
+        "scope"
+      ],
+      "title": "DabtProfile",
+      "type": "object"
+    },
+    "DefectMechanism": {
+      "enum": [
+        "shudhudh",
+        "ilal"
+      ],
+      "title": "DefectMechanism",
+      "type": "string"
+    },
+    "Escalation": {
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "fraud_alert": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FraudAlert"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "required"
+      ],
+      "title": "Escalation",
+      "type": "object"
+    },
+    "FraudAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "issued": {
+          "title": "Issued",
+          "type": "boolean"
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tier"
+        }
+      },
+      "required": [
+        "issued"
+      ],
+      "title": "FraudAlert",
+      "type": "object"
+    },
+    "GoldInput": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "title": "Claim",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        }
+      },
+      "required": [
+        "claim",
+        "sources",
+        "context"
+      ],
+      "title": "GoldInput",
+      "type": "object"
+    },
+    "GoldMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "title": "Author",
+          "type": "string"
+        },
+        "drafted_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drafted By"
+        },
+        "annotation_date": {
+          "title": "Annotation Date",
+          "type": "string"
+        },
+        "rules_exercised": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "title": "Rules Exercised",
+          "type": "array"
+        },
+        "defects_seeded": {
+          "items": {
+            "$ref": "#/$defs/DefectMechanism"
+          },
+          "title": "Defects Seeded",
+          "type": "array"
+        },
+        "domain": {
+          "title": "Domain",
+          "type": "string"
+        },
+        "finance_shape": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finance Shape"
+        },
+        "review_status": {
+          "$ref": "#/$defs/ReviewStatus"
+        },
+        "preference_pair_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preference Pair Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "author",
+        "annotation_date",
+        "rules_exercised",
+        "domain",
+        "review_status"
+      ],
+      "title": "GoldMeta",
+      "type": "object"
+    },
+    "GoldTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis": {
+          "minLength": 1,
+          "title": "Analysis",
+          "type": "string"
+        },
+        "verdicts": {
+          "items": {
+            "$ref": "#/$defs/Verdict"
+          },
+          "minItems": 1,
+          "title": "Verdicts",
+          "type": "array"
+        },
+        "registry_updates": {
+          "items": {
+            "$ref": "#/$defs/RegistryUpdate"
+          },
+          "title": "Registry Updates",
+          "type": "array"
+        },
+        "escalation": {
+          "$ref": "#/$defs/Escalation"
+        }
+      },
+      "required": [
+        "analysis",
+        "verdicts",
+        "escalation"
+      ],
+      "title": "GoldTarget",
+      "type": "object"
+    },
+    "Grade": {
+      "description": "Axis-1 source reliability (Jarḥ wa Taʿdīl), §2.2.",
+      "enum": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "MATRUK"
+      ],
+      "title": "Grade",
+      "type": "string"
+    },
+    "Language": {
+      "enum": [
+        "en",
+        "ar"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "RegistryUpdate": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "action",
+        "pattern"
+      ],
+      "title": "RegistryUpdate",
+      "type": "object"
+    },
+    "ReviewStatus": {
+      "enum": [
+        "draft",
+        "gold_approved",
+        "rejected"
+      ],
+      "title": "ReviewStatus",
+      "type": "string"
+    },
+    "Rule": {
+      "description": "Verdict derivation rules, §2.4.",
+      "enum": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6"
+      ],
+      "title": "Rule",
+      "type": "string"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "axis1_grade": {
+          "$ref": "#/$defs/Grade"
+        },
+        "axis1_score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Axis1 Score",
+          "type": "integer"
+        },
+        "dabt_profile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DabtProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "conflict_flags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conflict Flags"
+        },
+        "upstream_trace": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Trace"
+        },
+        "registry_flags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry Flags"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "timestamp": {
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "type",
+        "axis1_grade",
+        "axis1_score",
+        "content",
+        "timestamp"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Split": {
+      "enum": [
+        "train",
+        "dev",
+        "frozen"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "Verdict": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "title": "Claim",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "grade": {
+          "$ref": "#/$defs/Axis2Grade"
+        },
+        "band": {
+          "$ref": "#/$defs/Band"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "integer"
+        },
+        "confidence_interval": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence Interval"
+        },
+        "derivation_trace": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Derivation Trace",
+          "type": "array"
+        },
+        "rules_cited": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "minItems": 1,
+          "title": "Rules Cited",
+          "type": "array"
+        },
+        "defect_mechanisms": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/DefectMechanism"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Defect Mechanisms"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        }
+      },
+      "required": [
+        "claim",
+        "grade",
+        "band",
+        "score",
+        "derivation_trace",
+        "rules_cited"
+      ],
+      "title": "Verdict",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "record_id": {
+      "pattern": "^gold-\\d{4}$",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "split": {
+      "$ref": "#/$defs/Split"
+    },
+    "language": {
+      "$ref": "#/$defs/Language"
+    },
+    "input": {
+      "$ref": "#/$defs/GoldInput"
+    },
+    "target": {
+      "$ref": "#/$defs/GoldTarget"
+    },
+    "meta": {
+      "$ref": "#/$defs/GoldMeta"
+    }
+  },
+  "required": [
+    "record_id",
+    "split",
+    "language",
+    "input",
+    "target",
+    "meta"
+  ],
+  "title": "GoldRecord",
+  "type": "object"
+}
