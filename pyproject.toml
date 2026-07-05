@@ -6,6 +6,7 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "pandas>=2.2",
     "scipy>=1.13",
+    "pydantic>=2",   # D1 gold-record schema contract (tools/sanad_schema.py) — explicit, not transitive
 ]
 
 [dependency-groups]
@@ -47,6 +48,7 @@ serve = [
 dev = [
     "ruff>=0.6",
     "pytest>=8",
+    "jsonschema>=4",   # round-trips the emitted data/d1/gold.schema.json in tests
 ]
 
 [tool.uv]
@@ -73,3 +75,4 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]   # import tools.sanad_schema / tools.validate_gold from repo root

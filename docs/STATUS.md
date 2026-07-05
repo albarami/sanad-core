@@ -20,11 +20,21 @@
 - [x] Downloads — **COMPLETE 2026-07-04**: 26 snapshot shards (4+11+11; 9B 19G, 27B 52G, Fanar 51G) plus one zero-byte `.no_exist` sentinel (so `find … -name '*.safetensors'` returns 27, not 26); zero `.incomplete` files. Authenticated queue, DONE markers in `~/models/download.out`; orphaned partials cleaned (28.7 GB); AutoConfig re-verified ×3. Cache/disk (measured 2026-07-04 14:24 UTC): `~/models/hf` 121G, `/home` 805G free. DNS-flap saga + ops lessons: ENVIRONMENT.md friction 8. The 2026-07-03 auto-queued download of the superseded D1 iteration model was stopped when D1 was revised and its partial cache deleted (details: git history + `~/models/download-20260703.log`).
 
 ## Step 3 — First gold work (after smoke tests)
-- [ ] Gold cases #1–3 authored (ṣukūk-certification template, UDS Appendix A first)
+- [x] **Slice 1 complete** — gold-record schema (`tools/sanad_schema.py`, pydantic v2 + emitted `data/d1/gold.schema.json`), validator (`tools/validate_gold.py`, Tier-A/B/C), tests (`tests/test_gold_validator.py`, 23 passing), `data/d1/SCHEMA.md` — 2026-07-05
+- [x] Gold case #1 authored + **R-C certified gold_approved** (`data/d1/gold-0001.json`, UDS Appendix A ṣukūk-certification worked example; coverage_matrix.csv row: salim_verified=yes, reviewer_verdict=approved) — 2026-07-05
+- [ ] Gold cases #2–3 authored (per MANDATORY_CELLS coverage gaps)
 - [ ] Codex reviews case #1 derivation trace
 - [ ] Book Week-6 IP-counsel intro call
 
 ## Notes
+- 2026-07-05 (Slice 1): gold-record schema + validator + certified record #1
+  landed. Two corpus-standard decisions set here: (1) UDS Appendix A's rule list
+  for the sukuk example is corrected — the rejection verdict is R3-produced, so
+  record #1's rules_exercised = R1,R2,R3,R4,R5 (single invariant:
+  meta.rules_exercised == union of per-verdict rules_cited); (2) **ASCII
+  transliteration standard** — all Latin transliteration of Sanad vocabulary is
+  uniform ASCII (saduq, dabt, sahih, mawdu, shudhudh, ilal, tawatur, isnad,
+  matn); `ar` records keep native Arabic script (see `data/d1/SCHEMA.md`).
 - GPU had ~31/32.6 GB VRAM occupied by an external process during setup night —
   free it before smoke tests 2–5.
 - 2026-07-03 late: independent editor revised PROJECT_BRIEF/execution plan — D1
