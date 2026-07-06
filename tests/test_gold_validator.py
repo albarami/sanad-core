@@ -8,11 +8,17 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from tools.sanad_schema import GoldRecord, coverage_row, tier_b_failures
+from tools.sanad_schema import (
+    GoldRecord,
+    coverage_row,
+    find_unresolved_placeholders,
+    tier_b_failures,
+)
 from tools.validate_gold import validate_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GOLD1 = REPO_ROOT / "data" / "d1" / "gold-0001.json"
+GOLD2 = REPO_ROOT / "data" / "d1" / "gold-0002.json"
 SCHEMA_JSON = REPO_ROOT / "data" / "d1" / "gold.schema.json"
 
 EXPECTED_COVERAGE_ROW = (
@@ -20,9 +26,18 @@ EXPECTED_COVERAGE_ROW = (
     "R1;R2;R3;R4;R5,V1;V6,shudhudh,S1;S3;S4;MATRUK,2026-07-05,yes,approved"
 )
 
+EXPECTED_COVERAGE_ROW_GOLD2 = (
+    "gold-0002,gold_approved,ar,islamic_finance:sukuk_certification,"
+    "R1;R2;R3;R6,V2;V3;V4,ilal,S3;S4;S5;S6,2026-07-06,yes,approved"
+)
+
 
 def base() -> dict:
     return json.loads(GOLD1.read_text(encoding="utf-8"))
+
+
+def base2() -> dict:
+    return json.loads(GOLD2.read_text(encoding="utf-8"))
 
 
 # 1 — the real record is valid through Tier-A + Tier-B, and validate_path exits 0
@@ -197,3 +212,60 @@ def test_validate_path_tier_b_exit(tmp_path):
     p = tmp_path / "broken.json"
     p.write_text(json.dumps(d), encoding="utf-8")
     assert validate_path(str(p)) == 2
+
+
+# ── placeholder guard (permanent corpus safeguard) ────────────────────────────
+
+
+# 18 — find_unresolved_placeholders reports the right paths and is clean otherwise
+def test_find_unresolved_placeholders_paths():
+    data = {"a": "ok", "b": {"c": "TODO_AR:x"}, "d": ["fine", "TODO_AR:y"], "e": 5}
+    assert set(find_unresolved_placeholders(data)) == {"b.c", "d[1]"}
+    assert find_unresolved_placeholders({"a": "clean", "b": ["also clean"], "n": 3}) == []
+
+
+# 19 — the real record #1 carries no placeholders
+def test_gold_0001_placeholder_free():
+    assert find_unresolved_placeholders(base()) == []
+
+
+# 20 — a record with any TODO_ stub is rejected (exit 4) before Tier-B / coverage
+def test_placeholder_record_rejected_exit4(tmp_path):
+    d = base()
+    d["input"]["claim"] = "TODO_AR:overall_claim"  # unauthored stub anywhere in the tree
+    p = tmp_path / "with_placeholder.json"
+    p.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+    assert validate_path(str(p)) == 4
+    assert validate_path(str(p), emit_coverage=True) == 4  # coverage is never reached
+
+
+# ── gold-0002 acceptance (runs on Salim's real Arabic draft, never placeholders) ──
+
+
+# 21 — the Arabic draft validates clean through Tier-A + guard + Tier-B
+def test_gold_0002_validates():
+    rec = GoldRecord.model_validate(base2())
+    assert rec.record_id == "gold-0002"
+    assert rec.language.value == "ar"
+    assert tier_b_failures(rec) == []
+    assert find_unresolved_placeholders(base2()) == []
+    assert validate_path(str(GOLD2)) == 0
+
+
+# 22 — the emitted coverage row is exactly the fixed draft-stage line
+def test_gold_0002_coverage_row_literal():
+    rec = GoldRecord.model_validate(base2())
+    assert coverage_row(rec, reviewer_verdict="approved") == EXPECTED_COVERAGE_ROW_GOLD2
+    assert len(EXPECTED_COVERAGE_ROW_GOLD2.split(",")) == 11
+    assert coverage_row(rec).split(",")[9] == "yes"  # gold_approved → salim_verified=yes
+
+
+# 23 — Slice-2 precedent: chronological-impossibility ilal at V4, fraud off, passes Tier-B
+def test_v4_ilal_chronological_no_fraud_passes_tier_b():
+    rec = GoldRecord.model_validate(base2())
+    v3 = rec.target.verdicts[2]
+    assert v3.band.value == "V4"
+    assert [d.value for d in v3.defect_mechanisms] == ["ilal"]
+    assert {r.value for r in v3.rules_cited} == {"R6", "R3"}
+    assert rec.target.escalation.fraud_alert.issued is False
+    assert tier_b_failures(rec) == []
