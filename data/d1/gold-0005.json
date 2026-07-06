@@ -1,0 +1,69 @@
+{
+  "record_id": "gold-0005",
+  "split": "train",
+  "language": "en",
+  "input": {
+    "claim": "An investment newsletter asserts OilCo's proven reserves are 1,500M barrels.",
+    "sources": [
+      {
+        "source_id": "fringe-newsletter",
+        "type": "financial_media",
+        "axis1_grade": "S5",
+        "axis1_score": 52,
+        "content": "Investment newsletter (opinion-grade, no audit) asserts OilCo's proven reserves are 1,500M barrels - the figure is lifted from an old company deck.",
+        "timestamp": "2026-07-06T10:00:00Z"
+      },
+      {
+        "source_id": "old-prelim-deck",
+        "type": "corporate_ir",
+        "axis1_grade": "S6",
+        "axis1_score": 45,
+        "upstream_trace": [],
+        "content": "A superseded 3-year-old preliminary exploration deck that floated a 1,500M 'potential resource' figure (speculative, not proven reserves; now outdated). The newsletter's number traces here.",
+        "timestamp": "2023-05-01T00:00:00Z"
+      },
+      {
+        "source_id": "sec-reserves-filing",
+        "type": "regulatory_filing",
+        "axis1_grade": "S1",
+        "axis1_score": 93,
+        "content": "OilCo's audited annual report: current proven reserves 500M barrels - the authoritative reference that reveals the newsletter's figure is a stale 'resource' number, not current proven reserves.",
+        "timestamp": "2026-03-15T00:00:00Z"
+      }
+    ],
+    "context": {"jurisdiction": "US", "madhab_default": "none", "decision_tier": 3}
+  },
+  "target": {
+    "analysis": "Step 1 - Axis-1 resolution. fringe-newsletter S5 (52) is opinion-grade, weak but not excluded, and is the claim's only direct support. old-prelim-deck S6 (45) is a superseded preliminary deck - the misattributed origin. sec-reserves-filing S1 (93) is the audited authority, used here as the reference that reveals the category error.\n\nStep 2 - Isnad tracing and independence. The newsletter's 1,500M figure traces upstream to the superseded S6 deck - a single defective chain, not an independent basis.\n\nStep 3 - Matn analysis and category check. The 1,500M is an old 'potential resource' estimate presented as current proven reserves. Cross-checked against the audited S1 filing, the misattribution is plain: a speculative resource figure has been relabeled as an audited reserves figure across a three-year gap.\n\nStep 4 - Shudhudh analysis. Not invoked. This is not irreconcilable opposition between competing claims; the S1 filing is the reference that reveals the defect, not an opposing source. No shudhudh.\n\nStep 5 - Ilal screen. A stale, superseded-category misattribution - a speculative old 'resource' figure presented as current audited 'proven reserves' - is a hidden defect surfaced by category and temporal checking, so ilal is established. This is the non-fabrication kind: the defect invalidates the claim, but deliberate fabrication is not proven.\n\nStep 6 - Fabrication screen. There is no proof of deliberate fabrication (a plausible careless conflation of resource-vs-reserves categories), so the verdict is not mawdu and no fraud alert is raised.\n\nStep 7 - Verdict derivation. R1 anchors on the S5 source, a weak base at the V4 floor. R3 demotes on the severe superseded-category ilal. A weak base plus a severe hidden defect lands the verdict in daif_jiddan (V5, 20) - distinct from a merely thin V4 and from a fabricated V6.\n\nStep 8 - Emission. The misattribution is escalated for human review; the registry logs the ilal; no fraud alert is issued.",
+    "verdicts": [
+      {
+        "claim": "OilCo proven reserves = 1,500M barrels",
+        "grade": "daif_jiddan",
+        "band": "V5",
+        "score": 20,
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the claim's only direct support is an opinion-grade S5 newsletter (52), a weak base at the V4 floor before defect screening.",
+          "R3 (demotion by defect): the 1,500M figure is a superseded preliminary 'potential resource' number presented as current audited 'proven reserves' - a stale, superseded-category ilal (revealed against the audited S1 filing); this severe hidden defect, on an already-weak S5 base, demotes the verdict to daif_jiddan (V5, 20).",
+          "Fabrication not established: the category misattribution is plausibly a careless conflation, not proven deliberate fabrication, so the verdict stops at V5 (not V6) and no fraud alert is issued."
+        ],
+        "rules_cited": ["R1", "R3"],
+        "defect_mechanisms": ["ilal"]
+      }
+    ],
+    "registry_updates": [
+      {"source_id": "fringe-newsletter", "action": "log_defect", "pattern": "ilal:superseded_category_misattribution"}
+    ],
+    "escalation": {"required": true, "fraud_alert": {"issued": false}}
+  },
+  "meta": {
+    "author": "founder",
+    "drafted_by": "ai_structure",
+    "annotation_date": "2026-07-06",
+    "rules_exercised": ["R1", "R3"],
+    "defects_seeded": ["ilal"],
+    "domain": "capital_markets",
+    "finance_shape": "reserves_overstatement",
+    "review_status": "gold_approved",
+    "preference_pair_ids": []
+  }
+}

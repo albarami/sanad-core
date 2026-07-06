@@ -1,3 +1,6 @@
 case_id,status,language,domain,rules_exercised,axis2_band,defect_seeded,source_grades_present,author_date,salim_verified,reviewer_verdict
 gold-0001,gold_approved,en,islamic_finance:sukuk_certification,R1;R2;R3;R4;R5,V1;V6,shudhudh,S1;S3;S4;MATRUK,2026-07-05,yes,approved
 gold-0002,gold_approved,ar,islamic_finance:sukuk_certification,R1;R2;R3;R6,V2;V3;V4,ilal,S3;S4;S5;S6,2026-07-06,yes,approved
+gold-0003,gold_approved,en,capital_markets:financial_spreading,R1;R3;R4;R5,V2;V4,shudhudh,S3;S4,2026-07-06,yes,approved
+gold-0005,gold_approved,en,capital_markets:reserves_overstatement,R1;R3,V5,ilal,S1;S5;S6,2026-07-06,yes,approved
+gold-0007,gold_approved,en,public_statistics,R1;R4;R6,V1,,S1;S3;S4,2026-07-06,yes,approved

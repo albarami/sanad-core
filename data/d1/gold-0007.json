@@ -1,0 +1,69 @@
+{
+  "record_id": "gold-0007",
+  "split": "train",
+  "language": "en",
+  "input": {
+    "claim": "The national statistics office reported the June unemployment rate at 3.9%.",
+    "sources": [
+      {
+        "source_id": "natl-stats-release",
+        "type": "government_statistics",
+        "axis1_grade": "S1",
+        "axis1_score": 95,
+        "content": "Official national statistics office release: June unemployment rate 3.9%, seasonally adjusted, with methodology notes.",
+        "timestamp": "2026-07-03T12:30:00Z"
+      },
+      {
+        "source_id": "wire-service",
+        "type": "news_media",
+        "axis1_grade": "S3",
+        "axis1_score": 74,
+        "upstream_trace": ["natl-stats-release"],
+        "content": "Major wire service reports 3.9%, citing the official release - downstream of the S1 source, not an independent chain.",
+        "timestamp": "2026-07-03T12:45:00Z"
+      },
+      {
+        "source_id": "econ-outlet",
+        "type": "news_media",
+        "axis1_grade": "S4",
+        "axis1_score": 63,
+        "upstream_trace": ["natl-stats-release"],
+        "content": "Economics outlet reports the 3.9% rate, also citing the release.",
+        "timestamp": "2026-07-03T13:10:00Z"
+      }
+    ],
+    "context": {"jurisdiction": "US", "madhab_default": "none", "decision_tier": 2}
+  },
+  "target": {
+    "analysis": "Step 1 - Axis-1 resolution. natl-stats-release S1 (95) is the official statistics channel with near-zero error history. wire-service S3 (74) and econ-outlet S4 (63) report the figure, but by citing the release (downstream).\n\nStep 2 - Isnad tracing and independence. The wire service and the economics outlet both trace upstream to the official release - they are echoes, not independent chains. The figure rests on the single authoritative S1 release.\n\nStep 3 - Shudhudh and ilal screens. No conflict and no defect; both screens are clear.\n\nStep 4 - Corroboration (R2 not invoked). Corroboration by an echo of a source is not a second attestation (the same informational-independence principle as record #2). No R2 elevation is available, and none is needed: S1 already anchors V1.\n\nStep 5 - Verdict derivation. R1 anchors on the S1 release to a V1 base (~92). R4 finds the release's precision profile strong and applies a small within-band adjustment, holding the score at 93. R6 attaches a validity horizon: a monthly statistic is valid until the next monthly release, after which it reverts to re-verify. Verdict: sahih (V1, 93) on the S1 anchor alone.\n\nStep 6 - Emission. Clean, authoritative, non-finance; no escalation and no fraud alert.",
+    "verdicts": [
+      {
+        "claim": "June unemployment rate = 3.9%",
+        "grade": "sahih",
+        "band": "V1",
+        "score": 93,
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the figure is anchored on the S1 official statistics release (95), which is standalone-sufficient authority, setting the verdict at V1 (~92).",
+          "R4 (dabt modifier): the release's precision profile is strong, so a small within-band adjustment holds the score at 93.",
+          "R6 (temporal validity): a monthly statistic carries a validity horizon until the next release, after which it reverts to re-verify.",
+          "No R2: the wire service and economics outlet cite the release rather than confirm it independently, so they are echoes, not a second chain; S1 alone already supports V1."
+        ],
+        "rules_cited": ["R1", "R4", "R6"],
+        "valid_until": "next_monthly_release"
+      }
+    ],
+    "registry_updates": [],
+    "escalation": {"required": false, "fraud_alert": {"issued": false}}
+  },
+  "meta": {
+    "author": "founder",
+    "drafted_by": "ai_structure",
+    "annotation_date": "2026-07-06",
+    "rules_exercised": ["R1", "R4", "R6"],
+    "defects_seeded": [],
+    "domain": "public_statistics",
+    "finance_shape": null,
+    "review_status": "gold_approved",
+    "preference_pair_ids": []
+  }
+}

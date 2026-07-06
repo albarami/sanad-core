@@ -23,11 +23,24 @@
 - [x] **Slice 1 complete** — gold-record schema (`tools/sanad_schema.py`, pydantic v2 + emitted `data/d1/gold.schema.json`), validator (`tools/validate_gold.py`, Tier-A/B/C), tests (`tests/test_gold_validator.py`, 23 passing), `data/d1/SCHEMA.md` — 2026-07-05
 - [x] Gold case #1 authored + **R-C certified gold_approved** (`data/d1/gold-0001.json`, UDS Appendix A ṣukūk-certification worked example; coverage_matrix.csv row: salim_verified=yes, reviewer_verdict=approved) — 2026-07-05
 - [x] **Slice 2 complete** — gold case #2 authored + **R-C certified gold_approved** (`data/d1/gold-0002.json`, Arabic chronological-impossibility iʿlāl in a Saudi ṣukūk-certification scenario; coverage row: salim_verified=yes, reviewer_verdict=approved). Adds a permanent `TODO_` placeholder guard to the validator (exit code 4) — 2026-07-06
-- [ ] Gold case #3 authored (per MANDATORY_CELLS coverage gaps)
+- [x] **Batch 1 (English) complete** — gold-0003 (financial spreading, shudhudh, V2/V4), gold-0005 (first **V5 daif_jiddan** exemplar — category-misattribution iʿlāl), gold-0007 (first **non-finance** case, V1 on S1+R4+R6) authored + **R-C certified gold_approved**; V5 precedent documented in `data/d1/SCHEMA.md` — 2026-07-06
+- [ ] Batch 1 (Arabic) — gold-0004 (disclosure, clean V4), gold-0006 (variance, R2 V3) pending Salim's authored Arabic
+- [ ] Further pilot cases per MANDATORY_CELLS gaps (iʿlāl +1, non-finance +2, clean +7, language balance toward 13 en / 12 ar)
 - [ ] Codex reviews case #1 derivation trace
 - [ ] Book Week-6 IP-counsel intro call
 
 ## Notes
+- 2026-07-06 (Batch 1, English three): gold-0003, gold-0005, gold-0007 landed —
+  R-C certified gold_approved. gold-0003 (financial-spreading shudhudh, V2 + V4),
+  gold-0005 (the first **V5 daif_jiddan** exemplar — category-misattribution iʿlāl
+  on a weak base, fabrication unproven), gold-0007 (first **non-finance** case, V1
+  on an S1 anchor + R4 + R6, no R2 — downstream echoes are not independent chains).
+  **All six Axis-2 bands (V1–V6) and all six rules (R1–R6) are now exercised**
+  across the corpus. New precedent documented in `data/d1/SCHEMA.md`: **V5 from
+  category-misattribution** — a weak (S5) base + a severe non-fabrication iʿlāl in a
+  miscategorized load-bearing datum → V5 (the coherent ladder: thin-honest V4 <
+  severe-hidden-defect V5 < proven-fabrication V6). Batch 1 Arabic two (gold-0004,
+  gold-0006) remain pending Salim's authored Arabic.
 - 2026-07-06 (Slice 2): gold record #2 landed — `data/d1/gold-0002.json`, Arabic
   (Salim-authored, transcribed verbatim) chronological-impossibility iʿlāl in a
   Saudi ṣukūk-certification scenario, R-C certified gold_approved. Coverage now
