@@ -351,6 +351,28 @@ def tier_c_warnings(rec: GoldRecord) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Authoring-completeness guard (permanent corpus safeguard). A record carrying
+# any unresolved 'TODO_' authoring stub must never validate green or earn a
+# coverage row: R-C forbids certifying an unauthored shell as corpus-ready.
+# --------------------------------------------------------------------------
+def find_unresolved_placeholders(data: object, path: str = "") -> list[str]:
+    """JSON paths of every string value that still contains a 'TODO_' placeholder."""
+    if isinstance(data, str):
+        return [path or "<root>"] if "TODO_" in data else []
+    if isinstance(data, dict):
+        hits: list[str] = []
+        for k, v in data.items():
+            hits += find_unresolved_placeholders(v, f"{path}.{k}" if path else str(k))
+        return hits
+    if isinstance(data, list):
+        hits = []
+        for i, v in enumerate(data):
+            hits += find_unresolved_placeholders(v, f"{path}[{i}]")
+        return hits
+    return []
+
+
+# --------------------------------------------------------------------------
 # Coverage-matrix row — the existing 11-column header, no invented columns.
 # --------------------------------------------------------------------------
 COVERAGE_HEADER = (

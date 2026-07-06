@@ -22,11 +22,23 @@
 ## Step 3 — First gold work (after smoke tests)
 - [x] **Slice 1 complete** — gold-record schema (`tools/sanad_schema.py`, pydantic v2 + emitted `data/d1/gold.schema.json`), validator (`tools/validate_gold.py`, Tier-A/B/C), tests (`tests/test_gold_validator.py`, 23 passing), `data/d1/SCHEMA.md` — 2026-07-05
 - [x] Gold case #1 authored + **R-C certified gold_approved** (`data/d1/gold-0001.json`, UDS Appendix A ṣukūk-certification worked example; coverage_matrix.csv row: salim_verified=yes, reviewer_verdict=approved) — 2026-07-05
-- [ ] Gold cases #2–3 authored (per MANDATORY_CELLS coverage gaps)
+- [x] **Slice 2 complete** — gold case #2 authored + **R-C certified gold_approved** (`data/d1/gold-0002.json`, Arabic chronological-impossibility iʿlāl in a Saudi ṣukūk-certification scenario; coverage row: salim_verified=yes, reviewer_verdict=approved). Adds a permanent `TODO_` placeholder guard to the validator (exit code 4) — 2026-07-06
+- [ ] Gold case #3 authored (per MANDATORY_CELLS coverage gaps)
 - [ ] Codex reviews case #1 derivation trace
 - [ ] Book Week-6 IP-counsel intro call
 
 ## Notes
+- 2026-07-06 (Slice 2): gold record #2 landed — `data/d1/gold-0002.json`, Arabic
+  (Salim-authored, transcribed verbatim) chronological-impossibility iʿlāl in a
+  Saudi ṣukūk-certification scenario, R-C certified gold_approved. Coverage now
+  covers **six new cells**: Arabic (first `ar` record), R6 (first temporal-validity
+  exercise), iʿlāl (first), and bands V2/V3/V4 (first of each). Two precedents
+  recorded: (1) the certification artifact is graded **S6 as-analyzed** (an invalid
+  attestation after the temporal check) without impugning the board's standing;
+  (2) a **chronological-impossibility iʿlāl with fabrication unproven → V4 +
+  escalation, no fraud alert** — distinct from a fabrication-class iʿlāl → V6. New
+  permanent corpus safeguard: the validator rejects any record carrying an
+  unresolved `TODO_` authoring placeholder (exit code 4) before coverage emission.
 - 2026-07-05 (Slice 1): gold-record schema + validator + certified record #1
   landed. Two corpus-standard decisions set here: (1) UDS Appendix A's rule list
   for the sukuk example is corrected — the rejection verdict is R3-produced, so

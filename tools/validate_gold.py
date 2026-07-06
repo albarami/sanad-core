@@ -5,7 +5,7 @@ Usage:
 
 Exit codes: 0 = Tier-A + Tier-B pass (Tier-C warnings are non-blocking);
 1 = Tier-A (schema) failure; 2 = Tier-B (derivation-completeness) failure;
-3 = usage / file error.
+3 = usage / file error; 4 = unresolved TODO_ authoring placeholder.
 """
 
 from __future__ import annotations
@@ -20,6 +20,7 @@ from tools.sanad_schema import (
     COVERAGE_HEADER,
     GoldRecord,
     coverage_row,
+    find_unresolved_placeholders,
     tier_b_failures,
     tier_c_warnings,
 )
@@ -41,6 +42,15 @@ def validate_path(path: str, *, emit_coverage: bool = False, reviewer_verdict: s
         print(exc, file=sys.stderr)
         return 1
     print(f"TIER-A pass — {rec.record_id} constructs and satisfies numeric + coverage invariants")
+
+    # Authoring guard — no unresolved TODO_ placeholder may reach Tier-B or coverage.
+    holes = find_unresolved_placeholders(data)
+    if holes:
+        print(f"PLACEHOLDER FAIL — unresolved TODO_ authoring placeholder(s) ({path}):", file=sys.stderr)
+        for h in holes:
+            print(f"  - {h}", file=sys.stderr)
+        return 4
+    print("GUARD pass — no unresolved TODO_ placeholders")
 
     # Tier-B — derivation-trace completeness (structured fields only).
     b_fails = tier_b_failures(rec)
