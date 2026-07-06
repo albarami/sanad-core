@@ -78,6 +78,44 @@ not compressed labels — so the trace is pedagogically complete for training.
 `family:shape` (e.g. `islamic_finance:sukuk_certification`). The row is emitted
 by `validate_gold.py --emit-coverage` and appended only after the record passes.
 
+## Grading precedents (accumulated doctrine)
+
+Case-law from certified records, applied to future grading. Each is a human R-C
+judgment that the validator permits but does not itself adjudicate.
+
+- **S6 "as-analyzed" (exemplar: gold-0002).** Grade an evidentiary artifact by
+  what analysis concludes it *is*, not by how it presents. A certificate that
+  *looks* like an S1/S2 board attestation but is invalid after examination is
+  graded **S6** (invalid/unreliable, not proven fabricated). The issuing body's
+  institutional authority is conceptually separate and is not downgraded — we
+  grade the artifact, not the institution.
+
+- **V4-not-V6 for a chronological-impossibility ilal (exemplar: gold-0002).** A
+  confirmed ilal that is *validity-defeating but not fabrication* — e.g. a
+  certificate dated outside the signatory's valid horizon — demotes the dependent
+  claim to **V4 daif, with escalation and no fraud_alert**, reserving V6 (+
+  fraud_alert) for *proven* fabrication. ilal adjudication is a human act (UDS
+  §6.1); the validator enforces only structural completeness.
+
+- **V5 (daif_jiddan) from category-misattribution (exemplar: gold-0005).** A weak
+  (S5) base plus a SEVERE NON-FABRICATION ilal in the load-bearing datum — where
+  the central support is materially MISCLASSIFIED (e.g. a stale "potential
+  resource" estimate presented as current "proven reserves"), which are different
+  evidentiary categories, not weaker/stronger versions of the same claim — lands
+  at V5. Distinct from V4 (thin-but-honest: claim may be true, chain merely weak)
+  and from V6 (proven fabrication). No fraud_alert unless intent/fabrication is
+  proven.
+
+**The coherent low-verdict ladder** (rising source/defect severity; fabrication
+presumed unproven until proven):
+- **V4 daif** — a thin-but-honest weak chain (the claim may be true, the chain is
+  merely weak: gold-0004, pending Stage B), or a single validity-defeating ilal on
+  an otherwise-strong-looking claim (gold-0002, claim 3).
+- **V5 daif_jiddan** — a weak base *plus* a severe non-fabrication ilal
+  (category-misattribution) in the load-bearing datum (gold-0005).
+- **V6 mawdu** — proven fabrication / manipulation signature, fraud_alert issued
+  (gold-0001, claim 3).
+
 ## R-C lifecycle (label discipline)
 
 AI may draft the **structure**; **grades are the founder's** (record #1 is

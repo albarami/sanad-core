@@ -1,0 +1,89 @@
+{
+  "record_id": "gold-0003",
+  "split": "train",
+  "language": "en",
+  "input": {
+    "claim": "SpreadCo's Q3 net revenue, reported inconsistently across data providers, needs reconciliation and grading.",
+    "sources": [
+      {
+        "source_id": "vendor-alpha",
+        "type": "financial_data",
+        "axis1_grade": "S3",
+        "axis1_score": 75,
+        "content": "Established market-data provider: SpreadCo Q3 net revenue $1.20B, mapped from the standardized income statement.",
+        "timestamp": "2026-07-06T09:00:00Z"
+      },
+      {
+        "source_id": "vendor-beta",
+        "type": "financial_data",
+        "axis1_grade": "S3",
+        "axis1_score": 71,
+        "content": "Second data provider: SpreadCo Q3 net revenue $2.10B - this figure erroneously folds gross billings into the net-revenue line (a spreading error), but is reported as net revenue.",
+        "timestamp": "2026-07-06T09:05:00Z"
+      },
+      {
+        "source_id": "analyst-desk",
+        "type": "analyst_research",
+        "axis1_grade": "S4",
+        "axis1_score": 64,
+        "content": "Sell-side note citing ~$1.2B net revenue, consistent with vendor-alpha; explicitly distinguishes gross billings from net revenue.",
+        "timestamp": "2026-07-06T09:20:00Z"
+      },
+      {
+        "source_id": "company-ir",
+        "type": "corporate_ir",
+        "axis1_grade": "S4",
+        "axis1_score": 62,
+        "conflict_flags": ["self_interested_party"],
+        "content": "Company IR preliminary deck stating ~$1.2B net revenue.",
+        "timestamp": "2026-07-06T09:30:00Z"
+      }
+    ],
+    "context": {"jurisdiction": "US", "madhab_default": "none", "decision_tier": 2}
+  },
+  "target": {
+    "analysis": "Step 1 - Axis-1 resolution. vendor-alpha S3 (75) and vendor-beta S3 (71) are established data providers; analyst-desk S4 (64) is a sell-side note; company-ir S4 (62) is a self-interested party. There is no public audited filing (private company), so the strongest admissible support tops out at S3.\n\nStep 2 - Isnad tracing and informational independence. vendor-alpha, analyst-desk, and company-ir converge on ~$1.2B net revenue through distinct channels; vendor-beta's $2.10B is a lone chain.\n\nStep 3 - Matn analysis and conflict (R5). Both figures are reported as net revenue, so the conflict is on the same proposition - not a legitimate gross-vs-net scope difference. Reconciliation is attempted: vendor-beta's $2.10B does not reconcile as net revenue (it is gross billings erroneously folded into the net-revenue line). Reconciliation fails; the higher-corroborated consensus (S3 alpha plus S4 analyst plus S4 IR) prevails, and vendor-beta's net-revenue figure is the outlier.\n\nStep 4 - Tawatur assessment. Not at issue here; this is corroboration among a few sources, not mass transmission.\n\nStep 5 - Shudhudh analysis. vendor-beta's $2.10B-as-net-revenue irreconcilably opposes the stronger net-revenue consensus on the same proposition, so shudhudh is established on claim 2 - a genuine anomaly, not a metric mismatch. The source is S3 (not disqualified) and the error is a benign spreading mistake that benefits no identifiable position, so it is discounted with a registry note and no fraud signal is raised.\n\nStep 6 - Ilal screen. No chronological or grafting defect. Screen clear.\n\nStep 7 - Verdict derivation. Claim 1 ($1.20B): R1 anchors the S3 vendor to a V2 base; R5 resolves the conflict in its favor; R4 applies a minor within-band dabt deduction for vendor transmission noise and IR self-interest, yielding hasan (V2, 80). Claim 2 ($2.10B): R1 anchors vendor-beta S3 to a V2 base; R5 resolves the conflict against it; R3 demotes on shudhudh, capping the verdict at V4, yielding daif (V4, 42).\n\nStep 8 - Emission. A registry note logs vendor-beta's spreading error; no Layer-3 escalation and no fraud alert.",
+    "verdicts": [
+      {
+        "claim": "SpreadCo Q3 net revenue ~ $1.20B",
+        "grade": "hasan",
+        "band": "V2",
+        "score": 80,
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the strongest admissible support is the S3 data vendor (75); with no audited S1/S2 filing available, the base verdict anchors at V2.",
+          "R5 (conflict resolution): the competing $2.10B net-revenue figure does not reconcile (it is gross billings folded into the net line), so the higher-corroborated net-revenue consensus prevails and this claim stands.",
+          "R4 (dabt modifier): a minor within-band deduction for vendor transmission noise and IR self-interest lowers the score to 80, still inside V2."
+        ],
+        "rules_cited": ["R1", "R5", "R4"]
+      },
+      {
+        "claim": "SpreadCo Q3 net revenue ~ $2.10B",
+        "grade": "daif",
+        "band": "V4",
+        "score": 42,
+        "derivation_trace": [
+          "R1 (weakest-link anchor): the $2.10B figure is anchored on its S3 vendor (71), a V2 base before defect screening.",
+          "R5 (conflict resolution): reported as net revenue, the $2.10B does not reconcile against the net-revenue consensus; on the same proposition it is the losing side of the conflict.",
+          "R3 (demotion by defect): reported as net revenue, the $2.10B irreconcilably opposes the stronger net-revenue consensus - shudhudh, not a metric mismatch - which caps the verdict at V4; graded daif (42)."
+        ],
+        "rules_cited": ["R1", "R5", "R3"],
+        "defect_mechanisms": ["shudhudh"]
+      }
+    ],
+    "registry_updates": [
+      {"source_id": "vendor-beta", "action": "log_error", "pattern": "spreading_error:gross_folded_into_net"}
+    ],
+    "escalation": {"required": false, "fraud_alert": {"issued": false}}
+  },
+  "meta": {
+    "author": "founder",
+    "drafted_by": "ai_structure",
+    "annotation_date": "2026-07-06",
+    "rules_exercised": ["R1", "R3", "R4", "R5"],
+    "defects_seeded": ["shudhudh"],
+    "domain": "capital_markets",
+    "finance_shape": "financial_spreading",
+    "review_status": "gold_approved",
+    "preference_pair_ids": []
+  }
+}
